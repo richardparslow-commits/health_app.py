@@ -10,161 +10,91 @@ st.markdown(f"""
     .stApp {{ background: linear-gradient(180deg, {SILVER_GRAY} 0%, #FFFFFF 100%); }}
     .block-container {{ background-color: white; padding: 30px !important; border-radius: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.05); margin-top: 20px; }}
     h1, h2, h3 {{ color: {PRIMARY_RED} !important; }}
-    
-    .class-badge {{
-        display: inline-block;
-        padding: 15px 30px;
-        border-radius: 40px;
-        font-size: 24px;
-        font-weight: bold;
-        color: #fff;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        text-align: center;
-        margin-top: 10px;
-    }}
-    .eligibility-box {{
-        background: #f8fafc;
-        border: 2px solid {PRIMARY_RED};
-        padding: 20px;
-        border-radius: 12px;
-    }}
+    .class-badge {{ display: inline-block; padding: 15px 30px; border-radius: 40px; font-size: 24px; font-weight: bold; color: #fff; text-align: center; margin-top: 10px; }}
     </style>
     """, unsafe_allow_html=True)
 
 # 2. Header
 st.title("🩺 Health Class & Eligibility Predictor")
-st.info("Evaluate your Health Class & Product Eligibility based on fiduciary-grade pre-underwriting logic.")
+st.info("Complete all fields to finalize your Pre-Flight Health Audit.")
 
-# 3. Input Tabs (The 88-Question Integration)
-tab1, tab2, tab3, tab4 = st.tabs(["👤 Identity & Physical", "🏥 Medical Profile", "🚵 Lifestyle & Background", "👨‍⚕️ Physicians"])
+# 3. Input Tabs (Gathering variables for validation) 
+tab1, tab2, tab3, tab4 = st.tabs(["👤 Identity", "🏥 Medical", "🚵 Lifestyle", "👨‍⚕️ Physicians"])
 
 with tab1:
-    col_id, col_phys = st.columns(2)
-    with col_id:
-        st.subheader("Identity")
-        name = st.text_input("Full Name (Include maiden name)")
-        dob = st.text_input("Date of Birth (mm/dd/yyyy)")
-        sex = st.radio("Sex", ["Male", "Female", "Other"])
-        citizen = st.radio("U.S. Citizen?", ["Yes", "No"])
-    
-    with col_phys:
-        st.subheader("Physical Specs")
-        col_ft, col_in = st.columns(2)
-        with col_ft:
-            ft = st.selectbox("Height (ft)", [4, 5, 6, 7], index=1)
-        with col_in:
-            inc = st.selectbox("Height (in)", list(range(12)), index=10)
-        weight = st.number_input("Weight (lbs)", value=180)
-        
-        st.markdown("---")
-        nic = st.selectbox("Nicotine Use", ["Never / >3 years clean", "1-3 years clean", "Current / Within 12 months"])
-        weed = st.selectbox("Marijuana Use", ["None", "Occasional / Recreational", "Medical Prescription", "Daily Use (>5x week)"])
+    name = st.text_input("Full Name (Include maiden name)")
+    dob = st.text_input("Date of Birth (mm/dd/yyyy)")
+    sex = st.radio("Sex", ["Male", "Female", "Other"])
+    email_addr = st.text_input("Email Address") [cite: 56]
+    phone = st.text_input("Phone Number")
+    address = st.text_area("Home Address")
+    col_ft, col_in = st.columns(2)
+    with col_ft: ft = st.selectbox("Height (ft)", [4, 5, 6, 7], index=1)
+    with col_in: inc = st.selectbox("Height (in)", list(range(12)), index=10)
+    weight = st.number_input("Weight (lbs)", value=0)
 
 with tab2:
-    st.subheader("Comprehensive Risk Profile")
-    col_mild, col_sev, col_ko = st.columns(3)
-    
-    with col_mild:
-        st.markdown("##### 🟡 Mild / Moderate Risk")
-        m1 = st.checkbox("Controlled BP / Cholesterol")
-        m2 = st.checkbox("Thyroid / Celiac / GERD")
-        m3 = st.checkbox("Asthma / Sleep Apnea / Migraines")
-        m4 = st.checkbox("Anxiety / Depression / PTSD")
-        m5 = st.checkbox("Diabetes Type 2 (Oral Meds)")
-        
-    with col_sev:
-        st.markdown("##### 🟠 Severe / Substandard")
-        s1 = st.checkbox("Diabetes (Insulin / Complications)")
-        s2 = st.checkbox("Heart Attack / Stent / Angina")
-        s3 = st.checkbox("Stroke / TIA / A-Fib")
-        s4 = st.checkbox("Past History of Cancer")
-        s5 = st.checkbox("Bipolar / Suicide Attempt")
-        
-    with col_ko:
-        st.markdown("##### 🔴 Knockouts / GI Only")
-        k1 = st.checkbox("Organ Transplant / ICD")
-        k2 = st.checkbox("ALS / Alzheimer's / Dementia")
-        k3 = st.checkbox("COPD / Emphysema / Oxygen")
-        k4 = st.checkbox("Kidney Failure / Dialysis")
-        k5 = st.checkbox("Active/Current Cancer Treatment")
+    st.subheader("Medical Risk Factors") [cite: 53]
+    m_check = st.checkbox("Controlled BP / Cholesterol")
+    s_check = st.checkbox("History of Heart Attack / Stroke / Cancer")
+    k_check = st.checkbox("Organ Transplant / ALS / COPD")
+    meds = st.text_area("List all current Medications & Dosages")
 
 with tab3:
-    st.subheader("Lifestyle & Background")
-    col_l1, col_l2 = st.columns(2)
-    with col_l1:
-        income = st.number_input("Annual Income", value=75000)
-        occ = st.text_input("Occupation")
-        military = st.radio("Armed Forces / Reserves?", ["Yes", "No"])
-    with col_l2:
-        risk_hobbies = st.checkbox("High-Risk Hobbies (Skydiving, Racing, etc.)")
-        pilot_license = st.checkbox("Pilot License / Flown in past 5 years")
-        criminal = st.checkbox("Criminal Offense / Parole history")
-        bankruptcy = st.checkbox("Bankruptcy / Bad Debt (Last 5 years)")
+    st.subheader("Lifestyle & Background") [cite: 53]
+    income = st.number_input("Annual Income", value=0)
+    occ = st.text_input("Occupation")
+    nic = st.selectbox("Nicotine Use", ["None", "Current User"])
+    criminal = st.checkbox("History of criminal offenses?")
 
 with tab4:
-    st.subheader("Physician Data")
-    st.text_input("Primary Physician Name")
-    st.text_area("Reason last seen and results of visit")
-    st.text_area("List all current Medications & Dosages")
+    st.subheader("Physician Contact Info") [cite: 53]
+    doc_name = st.text_input("Primary Physician Name")
+    doc_visit = st.text_area("Reason for last visit & results")
 
-# 4. Underwriting Logic (The "cRank" System)
+# 4. Underwriting Logic
 total_inches = (ft * 12) + inc
-bmi = (weight * 703) / (total_inches * total_inches)
+bmi = (weight * 703) / (total_inches * total_inches) if weight > 0 else 0
 
-hClass = "Standard"
-cRank = 4 
-badge_color = "#f1c40f"
+# 5. Validation Logic (THE GATEKEEPER)
+# Define required fields
+required_fields = [name, dob, email_addr, phone, address, weight, occ, doc_name, doc_visit]
 
-if bmi <= 29:
-    hClass, cRank, badge_color = "Preferred Plus", 1, "#2ecc71"
-elif bmi <= 30:
-    hClass, cRank, badge_color = "Preferred", 2, "#2ecc71"
-elif bmi <= 32:
-    hClass, cRank, badge_color = "Standard Plus", 3, "#2ecc71"
-elif bmi <= 36:
-    hClass, cRank, badge_color = "Standard", 4, "#f1c40f"
-elif bmi <= 42:
-    hClass, cRank, badge_color = "Table Rated", 5, "#e67e22"
+# Check if all required fields have content
+# Strings shouldn't be empty, numbers shouldn't be 0
+is_form_complete = all([
+    name != "", dob != "", email_addr != "", phone != "", 
+    address != "", weight > 0, occ != "", 
+    doc_name != "", doc_visit != ""
+])
+
+st.divider()
+
+if not is_form_complete:
+    # Warning message if anything is missing
+    st.warning("⚠️ Please answer all questions to proceed with your fiduciary review.")
 else:
-    hClass, cRank, badge_color = "Decline (GI Only)", 6, "#e74c3c"
+    # If complete, show the results and the email submission button
+    st.success("✅ Flight Data Complete. You may now submit for review.")
+    
+    col_res1, col_res2 = st.columns(2)
+    with col_res1:
+        st.write(f"**Estimated BMI:** {bmi:.1f}")
+        st.markdown(f'<div class="class-badge" style="background: {PRIMARY_RED};">Analysis Ready</div>', unsafe_allow_html=True)
+    
+    # 6. Email Submission Button
+    # This creates a mailto link that pre-fills the subject and body with the user's data
+    subject = f"Health Analysis Request: {name}"
+    body = f"Client Name: {name}%0D%0ADOB: {dob}%0D%0ABMI: {bmi:.1f}%0D%0AOccupation: {occ}%0D%0AMedications: {meds}"
+    
+    mailto_link = f"mailto:richardparslow@lifepolicypilot.blog?subject={subject}&body={body}"
+    
+    st.markdown(f"""
+        <a href="{mailto_link}" style="text-decoration: none;">
+            <div style="background-color: {PRIMARY_RED}; color: white; padding: 15px 25px; border-radius: 8px; text-align: center; font-weight: bold;">
+                Email Results to Richard Parslow
+            </div>
+        </a>
+    """, unsafe_allow_html=True)
 
-if nic == "Current / Within 12 months" and cRank < 4:
-    hClass, cRank, badge_color = "Standard Smoker", 4, "#f1c40f"
-if weed in ["Medical Prescription", "Daily Use (>5x week)"] and cRank < 4:
-    hClass, cRank, badge_color = "Standard", 4, "#f1c40f"
-
-if any([m1, m2, m3, m4, m5]) and cRank < 4:
-    hClass, cRank, badge_color = "Standard", 4, "#f1c40f"
-if any([s1, s2, s3, s4, s5]) and cRank < 5:
-    hClass, cRank, badge_color = "Table Rated (Substandard)", 5, "#e67e22"
-if any([k1, k2, k3, k4, k5]) or criminal:
-    hClass, cRank, badge_color = "Decline (GI Only)", 6, "#e74c3c"
-
-# 5. Results & Eligibility Dashboard
-st.divider()
-col_res1, col_res2 = st.columns([1, 1.5])
-
-with col_res1:
-    st.markdown(f"### Results")
-    st.write(f"**Estimated BMI:** {bmi:.1f}")
-    st.markdown(f'<div>Estimated Health Class:</div><div class="class-badge" style="background: {badge_color};">{hClass}</div>', unsafe_allow_html=True)
-
-with col_res2:
-    st.markdown("### ✈️ Market Navigator: Eligibility")
-    with st.container():
-        st.markdown('<div class="eligibility-box">', unsafe_allow_html=True)
-        if cRank <= 4:
-            st.write("✅ **Standard & Top Tier Products Available**")
-            st.write("* Term Life / IUL / Whole Life")
-        elif cRank == 5:
-            st.write("⚠️ **Substandard Markets Required**")
-            st.write("* Substandard Term/IUL (Higher Premium)")
-            st.write("* Graded / Modified Final Expense")
-        else:
-            st.write("🚫 **Restricted Access**")
-            st.write("* Guaranteed Issue (GI) Whole Life **ONLY**")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-st.divider()
-st.link_button("Submit Data for Fiduciary Review", "https://lifepolicypilot.blog/contact-2/")
-st.caption("Disclaimer: This tool provides general estimates based on universal field underwriting guidelines. Final risk classification is subject to formal carrier review.")
+st.caption("Disclaimer: This tool provides objective simulations. Final results are subject to full fiduciary review and carrier guidelines.")
