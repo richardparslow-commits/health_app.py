@@ -24,7 +24,13 @@ ROOT = pathlib.Path(__file__).resolve().parent
 
 
 def build_app_html() -> str:
-    """Inline the static assets into a single self-contained HTML document."""
+    """Inline the static assets into a single self-contained HTML document.
+
+    Local-development fallback. The GitHub Actions workflow in the
+    HealthClassEstimator repo builds the same document ahead of time
+    (scripts/build-embedded.js) and pushes it here as app_embedded.html,
+    which load_app_html() prefers.
+    """
     index = (ROOT / "index.html").read_text(encoding="utf-8")
     css = (ROOT / "css" / "styles.css").read_text(encoding="utf-8")
     rules_js = (ROOT / "js" / "rules.js").read_text(encoding="utf-8")
@@ -49,6 +55,15 @@ def build_app_html() -> str:
     inline = "".join(f"<script>\n{src}\n</script>" for src in (rules_js, engine_js, app_js))
     index = index.replace("</body>", inline + "\n</body>")
     return index
+
+
+def load_app_html() -> str:
+    """Return the app HTML: the CI-built single-file artifact if present,
+    otherwise inline the assets at runtime (local development)."""
+    embedded = ROOT / "app_embedded.html"
+    if embedded.exists():
+        return embedded.read_text(encoding="utf-8")
+    return build_app_html()
 
 
 st.set_page_config(
@@ -76,6 +91,6 @@ st.caption(
 )
 
 try:
-    st.components.v1.html(build_app_html(), height=2400, scrolling=True)
+    st.components.v1.html(load_app_html(), height=2400, scrolling=True)
 except TypeError:  # older Streamlit releases without the scrolling parameter
-    st.components.v1.html(build_app_html(), height=2400)
+    st.components.v1.html(load_app_html(), height=2400)
