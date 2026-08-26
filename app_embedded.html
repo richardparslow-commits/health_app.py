@@ -445,6 +445,59 @@ table.domain-table { width: 100%; border-collapse: collapse; font-size: 13.5px; 
 .finance-ok { color: var(--teal); font-weight: 600; }
 .finance-fail { color: var(--danger); font-weight: 600; }
 
+/* ---- Acknowledgment gate --------------------------------------------- */
+.ack-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(8, 20, 33, .68);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow-y: auto;
+}
+.ack-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 24px 64px rgba(8, 20, 33, .4);
+  max-width: 660px;
+  width: 100%;
+  padding: 30px 32px;
+  border-top: 6px solid var(--teal);
+  margin: auto;
+}
+.ack-mark {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--teal), var(--accent));
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 13px; letter-spacing: .5px;
+  margin-bottom: 14px;
+}
+.ack-card h2 { margin: 0 0 6px; font-size: 22px; color: var(--navy); }
+.ack-statement { font-size: 15px; margin: 10px 0; }
+.ack-disclaimer {
+  background: var(--teal-light);
+  border-left: 4px solid var(--teal);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 13.5px;
+  color: var(--ink);
+  margin: 14px 0;
+}
+.ack-check {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 14px;
+  margin: 16px 0 12px;
+  cursor: pointer;
+}
+.ack-check input { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--teal); }
+.ack-hint { font-size: 12.5px; color: var(--muted); margin: 10px 0 0; }
+
 /* ---- Footer ---------------------------------------------------------- */
 .app-footer {
   position: fixed;
@@ -468,6 +521,22 @@ table.domain-table { width: 100%; border-collapse: collapse; font-size: 13.5px; 
   margin: 8px 0 0;
   line-height: 1.45;
 }
+.footer-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+.footer-links-label { font-weight: 600; }
+.footer-links-sep { color: var(--line); }
+.footer-links a { color: var(--teal); text-decoration: underline; text-underline-offset: 2px; }
+.footer-links a:hover { color: var(--navy); }
 
 /* ---- Buttons --------------------------------------------------------- */
 .btn {
@@ -554,6 +623,40 @@ table.domain-table { width: 100%; border-collapse: collapse; font-size: 13.5px; 
 </head>
 <body>
 
+<!-- Mandatory acknowledgment gate: the wizard stays inert behind this overlay
+     until the user accepts that the estimate is non-binding and that each
+     carrier has the final and absolute say on underwriting. -->
+<div class="ack-gate hidden" id="ack-gate" role="dialog" aria-modal="true" aria-labelledby="ack-title">
+  <div class="ack-card">
+    <div class="ack-mark">HCE</div>
+    <h2 id="ack-title">Acknowledgment required</h2>
+    <p class="ack-statement">
+      This tool helps <strong>estimate</strong> a person&rsquo;s health class for life-insurance
+      pre-underwriting and case triage. The estimate is <strong>preliminary and non-binding</strong>.
+      All carriers have the <strong>final and absolute say</strong> on the client&rsquo;s underwriting
+      and health class.
+    </p>
+    <div class="ack-disclaimer">
+      <strong>Legal disclaimer.</strong> This tool is not a medical diagnostic tool and does not
+      issue insurance, bind coverage, or replace a carrier underwriter&rsquo;s decision. The estimate
+      is based only on disclosed information. The carrier may obtain medical records, prescription
+      history, laboratory/paramedical results, consumer reports, and information from other insurers
+      or MIB, subject to authorization &mdash; those sources can change the estimate. Never suggest
+      withholding information or &ldquo;answering around&rdquo; a condition: applications state that answers
+      influence acceptance and that material misrepresentation or nondisclosure can jeopardize
+      coverage. Temporary coverage exists only if the exact carrier receipt conditions are met, not
+      because this tool gives a favorable estimate.
+    </div>
+    <label class="ack-check">
+      <input type="checkbox" id="ack-check">
+      <span>I have read and acknowledge the above. I understand this estimate is not binding and
+      that each carrier has the final and absolute say on the client&rsquo;s underwriting and health class.</span>
+    </label>
+    <button class="btn btn-primary" id="ack-accept" type="button" disabled>I acknowledge &mdash; continue</button>
+    <p class="ack-hint">You must acknowledge before entering any applicant information.</p>
+  </div>
+</div>
+
 <header class="app-header">
   <div class="header-inner">
     <div class="brand">
@@ -592,6 +695,12 @@ table.domain-table { width: 100%; border-collapse: collapse; font-size: 13.5px; 
       this estimate. This tool is not a medical diagnostic tool and does not issue insurance, bind coverage, or replace a
       carrier underwriter’s decision.
     </p>
+    <div class="footer-links">
+      <span class="footer-links-label">Request your consumer-report records:</span>
+      <a href="https://www.mib.com/request_your_record.html" target="_blank" rel="noopener noreferrer">MIB Consumer File</a>
+      <span class="footer-links-sep">·</span>
+      <a href="https://www.rxhistories.com/for-consumers/insurance/" target="_blank" rel="noopener noreferrer">Milliman IntelliScript</a>
+    </div>
   </div>
 </footer>
 
@@ -5514,6 +5623,13 @@ const App = (() => {
 
   /* ---------- boot ----------------------------------------------------- */
 
+  /* Acknowledgment gate: no applicant information may be entered before the
+     user accepts that the estimate is non-binding and that each carrier has
+     the final and absolute say on the client's underwriting and health class.
+     Acceptance persists per browser (localStorage); the gate re-appears until
+     accepted. */
+  const ACK_KEY = "hce_ack_v1";
+
   function boot() {
     loadState();
     $("#carrier-badge").textContent = CARRIER_RULES[state.carrier].name;
@@ -5521,6 +5637,25 @@ const App = (() => {
       saveState();
       showToast("Draft saved to this browser.");
     });
+
+    const gate = $("#ack-gate");
+    const check = $("#ack-check");
+    const accept = $("#ack-accept");
+    let acknowledged = false;
+    try { acknowledged = localStorage.getItem(ACK_KEY) === "1"; } catch (e) { /* ignore */ }
+
+    check.addEventListener("change", () => { accept.disabled = !check.checked; });
+    accept.addEventListener("click", () => {
+      try { localStorage.setItem(ACK_KEY, "1"); } catch (e) { /* ignore */ }
+      gate.classList.add("hidden");
+      render();
+    });
+
+    if (!acknowledged) {
+      // Keep the wizard inert until the acknowledgment is accepted.
+      gate.classList.remove("hidden");
+      return;
+    }
     render();
   }
 
