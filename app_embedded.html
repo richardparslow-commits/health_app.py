@@ -5225,9 +5225,10 @@ const Engine = (() => {
     if (d.ownership === "business") list.push("Business-owned coverage disclosed — business insurance questionnaire / ownership documentation may be required.");
     if (isYes(d.parolePast) && !isYes(d.paroleCurrent)) list.push("History of probation/parole disclosed — carriers review recency and offense severity; additional information may be required.");
     if (isYes(d.foreignTravel)) list.push("Foreign travel disclosed — review destinations and duration; some destinations trigger postponement or additional requirements.");
-    if (d.militaryService === "yes" || d.militaryService === "combat") {
+    if (d.militaryService === "yes" || d.militaryService === "combat" || d.militaryService === "veteran") {
       list.push("Military service disclosed — VA treatment records may be requested.");
       if (d.militaryService === "combat") list.push("Combat deployment disclosed — mental-health / TBI screening may apply.");
+      if (d.militaryService === "veteran") list.push("Veteran status disclosed — prior service with separation date; review for combat exposure, disability rating, or VA treatment history.");
     }
     if (d.foreignResidence === "short" || d.foreignResidence === "long") {
       list.push("Foreign residence disclosed — carrier residency requirements and country-of-residence review apply; certain countries may postpone or add requirements.");
@@ -5816,7 +5817,7 @@ const App = (() => {
 
   const STORAGE_KEY = "hce_state_v1";
   const $ = (sel) => document.querySelector(sel);
-  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+  const $$ = (sel, scope) => Array.from((scope || document).querySelectorAll(sel));
 
   /* The carrier lineup — shared by the applicant-step panel, the comparison
      header, and anywhere else the carrier choice appears. */
@@ -6264,8 +6265,8 @@ const App = (() => {
     c.appendChild(r3);
 
     const r4 = el("div", { class: "field-row" });
-    r4.appendChild(field("Military service", radioPill("militaryService", [["no", "No"], ["yes", "Yes — non-combat"], ["combat", "Yes — combat deployment"]])));
-    r4.appendChild(field("Lived outside the US recently?", radioPill("foreignResidence", [["no", "No"], ["short", "Yes — under 6 months"], ["long", "Yes — 6 months or more"]])));
+    r4.appendChild(field("Military service", radioPill("militaryService", [["no", "No"], ["veteran", "Veteran"], ["yes", "Yes — non-combat"], ["combat", "Yes — combat deployment"]])));
+    r4.appendChild(field("Currently live outside the USA", radioPill("foreignResidence", [["no", "No"], ["short", "Yes — under 6 months"], ["long", "Yes — 6 months or more"]])));
     c.appendChild(r4);
 
     _radioHandlers.sex = () => {};
