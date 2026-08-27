@@ -122,7 +122,7 @@ body {
   width: 100%;
   max-width: 1060px;
   margin: 0 auto;
-  padding: 24px 20px 120px;
+  padding: 24px 20px calc(var(--footer-h, 116px) + 12px);
 }
 .hidden { display: none !important; }
 
@@ -553,6 +553,7 @@ table.domain-table { width: 100%; border-collapse: collapse; font-size: 13.5px; 
   max-width: 1060px;
   margin: 0 auto;
   padding: 12px 20px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
 }
 .footer-nav { display: flex; align-items: center; gap: 10px; }
 .footer-spacer { flex: 1; }
@@ -695,7 +696,7 @@ table.domain-table { width: 100%; border-collapse: collapse; font-size: 13.5px; 
 /* ---- Toast ----------------------------------------------------------- */
 .toast {
   position: fixed;
-  bottom: 96px;
+  bottom: calc(var(--footer-h, 116px) + 16px);
   left: 50%;
   transform: translateX(-50%);
   background: var(--navy);
@@ -832,6 +833,51 @@ table.domain-table { width: 100%; border-collapse: collapse; font-size: 13.5px; 
 .print-sheet-table .print-lane { font-size: 8.5px; font-weight: 500; color: #14532d; margin-top: 2px; }
 .print-sheet-foot { margin-top: 12px; border-top: 1px solid #c3ccd4; padding-top: 7px; font-size: 9.5px; color: #55606e; }
 .print-sheet-sources { margin-top: 4px; font-size: 8.5px; color: #7b8490; }
+
+/* =========================================================================
+ * Responsive / device fit — desktop, iPad, smartphone
+ * ========================================================================= */
+/* Tables keep their natural column widths; on narrow screens the wrapper
+   scrolls horizontally instead of crushing columns or overflowing the page. */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.table-scroll .compare-table { min-width: 660px; }
+.table-scroll .domain-table { min-width: 480px; }
+.table-scroll .elig-chart { min-width: 400px; }
+
+/* Phones and small tablets (incl. iPad portrait at 768/820) */
+@media (max-width: 720px) {
+  .app-header { padding: 12px 14px; }
+  .header-inner { gap: 10px; }
+  .brand h1 { font-size: 21px; }
+  .tagline { font-size: 10.5px; }
+  .header-flag svg { width: 44px; height: auto; }
+  .app-main { padding-left: 12px; padding-right: 12px; }
+  .card { padding: 16px 14px; }
+  .result-hero { padding: 18px 16px; }
+  .result-hero h2 { font-size: 21px; }
+  /* iOS Safari zooms the whole page when focusing any input smaller than
+     16px — hold 16px on touch-width screens so the view never zoom-jumps. */
+  input[type="text"], input[type="number"], input[type="date"], select, textarea { font-size: 16px; }
+  .carrier-panel select { font-size: 16px; }
+  .ack-card { padding: 18px 16px 16px; }
+  .ack-card h2 { font-size: 19px; }
+  .compare-head { flex-direction: column; align-items: stretch; }
+  .compare-head-actions .btn-cta { width: 100%; text-align: center; }
+}
+
+/* Phones */
+@media (max-width: 480px) {
+  .brand h1 { font-size: 17px; }
+  .header-flag svg { width: 34px; height: auto; }
+  .tagline { font-size: 10px; }
+  .step-pill { padding: 10px 11px; font-size: 11.5px; }
+  .compare-table td { font-size: 12px; }
+  .footer-nav { flex-wrap: wrap; }
+  .footer-nav .btn { flex: 1 1 auto; }
+}
 
 </style>
 </head>
@@ -983,7 +1029,7 @@ table.domain-table { width: 100%; border-collapse: collapse; font-size: 13.5px; 
 
 
 <script>
-window.HCE_VERSION = "65"; // stamped by build-embedded.js
+window.HCE_VERSION = "66"; // stamped by build-embedded.js
 </script>
 <script>
 /* =========================================================================
@@ -7313,7 +7359,12 @@ const App = (() => {
         tbody.appendChild(tr);
       });
       tbl.appendChild(tbody);
-      wrap.appendChild(tbl);
+      /* Scroll wrapper: the eligibility chart keeps its natural column
+         widths and scrolls horizontally on narrow screens instead of
+         crushing or overflowing the page. */
+      const eligScroll = el("div", { class: "table-scroll" });
+      eligScroll.appendChild(tbl);
+      wrap.appendChild(eligScroll);
       if (e.chartNote) wrap.appendChild(el("p", { class: "elig-chart-note" }, e.chartNote));
     }
     if (e.notes && e.notes.length) {
@@ -8137,7 +8188,11 @@ const App = (() => {
       tbody.appendChild(tr);
     });
     tbl.appendChild(tbody);
-    wrap.appendChild(tbl);
+    /* Scroll wrapper: the 12-row comparison table scrolls horizontally on
+       phones/tablets instead of overflowing the page. */
+    const compareScroll = el("div", { class: "table-scroll" });
+    compareScroll.appendChild(tbl);
+    wrap.appendChild(compareScroll);
 
     const bottomLine = el("div", { class: "compare-bottom-line" });
     bottomLine.appendChild(el("strong", {}, "Bottom line: "));
@@ -8359,7 +8414,9 @@ const App = (() => {
       tbody.appendChild(row);
     }
     tbl.appendChild(tbody);
-    dom.appendChild(tbl);
+    const domScroll = el("div", { class: "table-scroll" });
+    domScroll.appendChild(tbl);
+    dom.appendChild(domScroll);
     wrap.appendChild(dom);
 
     /* ---- Limiting factors ---- */
@@ -8834,8 +8891,20 @@ const App = (() => {
     } catch (e) { return null; }
   }
 
+  /* -- Responsive footer clearance ---------------------------------------
+     The footer is fixed; its height changes as the nav and links wrap at
+     different viewport widths. Expose the live height as --footer-h so the
+     main content's bottom padding always clears it — no dead space on
+     desktop, no hidden content behind the footer on phones. */
+  function syncFooterSpace() {
+    const f = $(".app-footer");
+    if (f) document.documentElement.style.setProperty("--footer-h", Math.ceil(f.offsetHeight) + "px");
+  }
+
   function boot() {
     loadState();
+    syncFooterSpace();
+    window.addEventListener("resize", syncFooterSpace);
     const cb = $("#carrier-badge"); if (cb) cb.textContent = CARRIER_RULES[state.carrier].name;
     $("#btn-save").addEventListener("click", () => {
       saveState();
