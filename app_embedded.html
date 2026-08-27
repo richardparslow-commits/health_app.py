@@ -53,33 +53,28 @@ body {
 .header-inner {
   max-width: 1060px;
   margin: 0 auto;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
-  flex-wrap: wrap;
 }
-.brand { display: flex; align-items: center; gap: 14px; }
-.brand-mark {
-  width: 46px; height: 46px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--teal), var(--accent));
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: 14px; letter-spacing: .5px;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.25);
+.brand { text-align: center; min-width: 0; }
+.brand h1 {
+  margin: 0;
+  font-size: 40px; /* 2x the previous 20px */
+  font-weight: 800;
+  letter-spacing: .5px;
+  line-height: 1.1;
 }
-.brand h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: .2px; }
-.tagline { margin: 2px 0 0; font-size: 12.5px; opacity: .85; }
-.header-badges { display: flex; gap: 8px; }
-.badge {
-  background: rgba(255,255,255,.14);
-  border: 1px solid rgba(255,255,255,.25);
-  padding: 4px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
+.tagline { margin: 4px 0 0; font-size: 12.5px; opacity: .85; }
+.header-flag { display: flex; align-items: center; }
+.header-flag-left { justify-content: flex-start; }
+.header-flag-right { justify-content: flex-end; }
+.header-flag svg {
+  display: block;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.4), 0 2px 6px rgba(0,0,0,.25);
 }
-.badge-outline { background: transparent; }
 
 /* ---- Steps nav ------------------------------------------------------- */
 .steps-nav {
@@ -798,16 +793,43 @@ table.domain-table { width: 100%; border-collapse: collapse; font-size: 13.5px; 
 
 <header class="app-header">
   <div class="header-inner">
-    <div class="brand">
-      <div class="brand-mark">HCE</div>
-      <div>
-        <h1>HealthClassEstimator</h1>
-        <p class="tagline">Life-insurance pre-underwriting &amp; case triage — preliminary, non-binding estimate</p>
-      </div>
+    <div class="header-flag header-flag-left" aria-hidden="true">
+      <!-- United States flag (inline SVG) -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 100" width="76" height="40" role="img" aria-label="United States flag">
+        <defs><path id="hce-us-star" d="M0 -2.6 L0.584 -0.803 L2.472 -0.803 L0.944 0.307 L1.528 2.103 L0 0.993 L-1.528 2.103 L-0.944 0.307 L-2.472 -0.803 L-0.584 -0.803 Z" fill="#fff"/></defs>
+        <rect width="190" height="100" fill="#fff"/>
+        <rect y="0" width="190" height="7.692" fill="#B22234"/>
+        <rect y="15.384" width="190" height="7.692" fill="#B22234"/>
+        <rect y="30.768" width="190" height="7.692" fill="#B22234"/>
+        <rect y="46.152" width="190" height="7.692" fill="#B22234"/>
+        <rect y="61.536" width="190" height="7.692" fill="#B22234"/>
+        <rect y="76.92" width="190" height="7.692" fill="#B22234"/>
+        <rect y="92.304" width="190" height="7.696" fill="#B22234"/>
+        <rect width="76" height="53.846" fill="#3C3B6E"/>
+        <use href="#hce-us-star" x="7.6" y="2.99"/><use href="#hce-us-star" x="18.46" y="2.99"/><use href="#hce-us-star" x="29.31" y="2.99"/><use href="#hce-us-star" x="40.17" y="2.99"/><use href="#hce-us-star" x="51.03" y="2.99"/><use href="#hce-us-star" x="61.89" y="2.99"/>
+        <use href="#hce-us-star" x="12.67" y="8.98"/><use href="#hce-us-star" x="23.52" y="8.98"/><use href="#hce-us-star" x="34.38" y="8.98"/><use href="#hce-us-star" x="45.24" y="8.98"/><use href="#hce-us-star" x="56.1" y="8.98"/>
+        <use href="#hce-us-star" x="7.6" y="14.97"/><use href="#hce-us-star" x="18.46" y="14.97"/><use href="#hce-us-star" x="29.31" y="14.97"/><use href="#hce-us-star" x="40.17" y="14.97"/><use href="#hce-us-star" x="51.03" y="14.97"/><use href="#hce-us-star" x="61.89" y="14.97"/>
+        <use href="#hce-us-star" x="12.67" y="20.95"/><use href="#hce-us-star" x="23.52" y="20.95"/><use href="#hce-us-star" x="34.38" y="20.95"/><use href="#hce-us-star" x="45.24" y="20.95"/><use href="#hce-us-star" x="56.1" y="20.95"/>
+        <use href="#hce-us-star" x="7.6" y="26.94"/><use href="#hce-us-star" x="18.46" y="26.94"/><use href="#hce-us-star" x="29.31" y="26.94"/><use href="#hce-us-star" x="40.17" y="26.94"/><use href="#hce-us-star" x="51.03" y="26.94"/><use href="#hce-us-star" x="61.89" y="26.94"/>
+        <use href="#hce-us-star" x="12.67" y="32.92"/><use href="#hce-us-star" x="23.52" y="32.92"/><use href="#hce-us-star" x="34.38" y="32.92"/><use href="#hce-us-star" x="45.24" y="32.92"/><use href="#hce-us-star" x="56.1" y="32.92"/>
+        <use href="#hce-us-star" x="7.6" y="38.91"/><use href="#hce-us-star" x="18.46" y="38.91"/><use href="#hce-us-star" x="29.31" y="38.91"/><use href="#hce-us-star" x="40.17" y="38.91"/><use href="#hce-us-star" x="51.03" y="38.91"/><use href="#hce-us-star" x="61.89" y="38.91"/>
+        <use href="#hce-us-star" x="12.67" y="44.9"/><use href="#hce-us-star" x="23.52" y="44.9"/><use href="#hce-us-star" x="34.38" y="44.9"/><use href="#hce-us-star" x="45.24" y="44.9"/><use href="#hce-us-star" x="56.1" y="44.9"/>
+        <use href="#hce-us-star" x="7.6" y="50.88"/><use href="#hce-us-star" x="18.46" y="50.88"/><use href="#hce-us-star" x="29.31" y="50.88"/><use href="#hce-us-star" x="40.17" y="50.88"/><use href="#hce-us-star" x="51.03" y="50.88"/><use href="#hce-us-star" x="61.89" y="50.88"/>
+      </svg>
     </div>
-    <div class="header-badges">
-      <span class="badge" id="carrier-badge">Banner Life</span>
-      <span class="badge badge-outline" id="guide-badge">Guide v. 2026</span>
+    <div class="brand">
+      <h1>HealthClassEstimator</h1>
+      <p class="tagline">Life-insurance pre-underwriting &amp; case triage — preliminary, non-binding estimate</p>
+    </div>
+    <div class="header-flag header-flag-right" aria-hidden="true">
+      <!-- State of Texas flag (inline SVG) -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 60" width="66" height="44" role="img" aria-label="Texas flag">
+        <defs><path id="hce-tx-star" d="M0 -8.5 L1.908 -2.627 L8.084 -2.627 L3.088 1.003 L4.996 6.876 L0 3.247 L-4.996 6.876 L-3.088 1.003 L-8.084 -2.627 L-1.908 -2.627 Z" fill="#fff"/></defs>
+        <rect width="30" height="60" fill="#002868"/>
+        <rect x="30" width="60" height="30" fill="#fff"/>
+        <rect x="30" y="30" width="60" height="30" fill="#BF0A30"/>
+        <use href="#hce-tx-star" transform="translate(15 30)"/>
+      </svg>
     </div>
   </div>
 </header>
@@ -6507,7 +6529,7 @@ const App = (() => {
     /* Carrier panel: the one choice that drives the entire estimate. */
     const carrierPanel = el("div", { class: "carrier-panel" });
     carrierPanel.appendChild(el("p", { class: "carrier-label" }, "1 · Underwriting carrier"));
-    carrierPanel.appendChild(selectInput("carrier", CARRIER_OPTIONS, { onChange: () => { $("#carrier-badge").textContent = CARRIER_RULES[state.carrier].name; render(); } }));
+    carrierPanel.appendChild(selectInput("carrier", CARRIER_OPTIONS, { onChange: () => { const cb = $("#carrier-badge"); if (cb) cb.textContent = CARRIER_RULES[state.carrier].name; render(); } }));
     const cr = CARRIER_RULES[state.carrier];
     carrierPanel.appendChild(el("p", { class: "carrier-desc" }, (cr.guide && cr.guide.title ? cr.guide.title + " (" + (cr.guide.version || "current edition") + ")" : cr.name) + " — build charts, BP/cholesterol thresholds, nicotine lookbacks, decline/postpone screens, and evidence requirements all come from this ruleset."));
     carrierPanel.appendChild(carrierEligibility(cr));
@@ -7555,7 +7577,7 @@ const App = (() => {
   function applyCarrierSwitch(id) {
     state.carrier = id;
     saveState();
-    $("#carrier-badge").textContent = CARRIER_RULES[id].name;
+    const cb = $("#carrier-badge"); if (cb) cb.textContent = CARRIER_RULES[id].name;
     runEstimate(); // re-renders results, including the all-carrier comparison
   }
 
@@ -7790,7 +7812,7 @@ const App = (() => {
 
   function boot() {
     loadState();
-    $("#carrier-badge").textContent = CARRIER_RULES[state.carrier].name;
+    const cb = $("#carrier-badge"); if (cb) cb.textContent = CARRIER_RULES[state.carrier].name;
     $("#btn-save").addEventListener("click", () => {
       saveState();
       showToast("Draft saved to this browser.");
