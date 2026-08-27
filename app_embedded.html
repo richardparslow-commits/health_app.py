@@ -881,7 +881,7 @@ table.domain-table { width: 100%; border-collapse: collapse; font-size: 13.5px; 
 
 
 <script>
-window.HCE_VERSION = "55"; // stamped by build-embedded.js
+window.HCE_VERSION = "56"; // stamped by build-embedded.js
 </script>
 <script>
 /* =========================================================================
@@ -5617,6 +5617,7 @@ const Engine = (() => {
     }
     if (flags.includes("undisclosed_meds")) missing.push("medication-condition mismatch");
     if (flags.includes("missing_material_data")) missing.push("key data");
+    if (flags.includes("diabetes_a1c_missing")) missing.push("diabetes A1c value");
     const pct = score / total;
     if (pct >= 0.9) return { level: "High", missing };
     if (pct >= 0.7) return { level: "Moderate", missing };
@@ -6055,6 +6056,15 @@ const Engine = (() => {
     // of trusting a corrected class.
     if (nic.dateKind === "future" || nic.dateKind === "invalid") flags.push("nicotine_date_suspect");
     if (d.usedNicotine === "no" && d.nicotineEver === "yes" && !isNaN(Number(d.nicotineQuitYears)) && Number(d.nicotineQuitYears) >= 0 && Number(d.nicotineQuitYears) <= 10) flags.push("conflicting_disclosure");
+    /* A disclosed diabetes with a blank/unparseable A1c must not be read as
+       "A1c is fine" — the high-A1c decline screen is keyed off a valid number,
+       so an unanswered A1c would otherwise silently avoid a decline it can't be
+       sure about. Surface it so the producer confirms the A1c before relying on
+       a non-declined diabetes class. */
+    const dmCond = (d.conditions || []).find(c => c.id === "diabetes");
+    if (dmCond && (dmCond.a1c === "" || dmCond.a1c === null || dmCond.a1c === undefined || Number.isNaN(Number(dmCond.a1c)))) {
+      flags.push("diabetes_a1c_missing");
+    }
 
     // evidence flags
     const ev = evidenceNeeded(rules, d, condIds);
@@ -7983,7 +7993,8 @@ const App = (() => {
     va_disability: "VA disability rating — class capped pending records",
     va_treatment: "VA treatment without disclosed condition — confirm",
     hazardous_avocation: "Hazardous occupation / avocation — class capped pending review",
-    nicotine_date_suspect: "Last-use date unrecognized or in the future — confirm before trusting the class"
+    nicotine_date_suspect: "Last-use date unrecognized or in the future — confirm before trusting the class",
+    diabetes_a1c_missing: "Diabetes A1c not provided — confirm before relying on the non-declined class"
   };
   const FLAG_CLASS = {
     needs_aps: "flag-warn", needs_exam: "flag-warn", likely_table: "flag-warn",
@@ -7991,7 +8002,7 @@ const App = (() => {
     accelerated_uw_possible: "flag-ok",    financial_review: "flag-warn", undisclosed_meds: "flag-warn", criminal_history: "flag-warn",
     unexplained_care: "flag-warn", foreign_residence: "flag-warn", conflicting_disclosure: "flag-danger",
     combat_exposure: "flag-warn", va_disability: "flag-warn", va_treatment: "flag-warn",
-    nicotine_date_suspect: "flag-danger"
+    nicotine_date_suspect: "flag-danger", diabetes_a1c_missing: "flag-warn"
   };
 
   const DOMAIN_LABELS = {
