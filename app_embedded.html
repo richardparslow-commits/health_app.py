@@ -897,7 +897,7 @@ table.domain-table { width: 100%; border-collapse: collapse; font-size: 13.5px; 
 
 
 <script>
-window.HCE_VERSION = "61"; // stamped by build-embedded.js
+window.HCE_VERSION = "62"; // stamped by build-embedded.js
 </script>
 <script>
 /* =========================================================================
@@ -1284,7 +1284,7 @@ const CARRIER_RULES = {
       { id: "gastric_bypass_recent", text: "Gastric bypass within the last 6 months", reason: "Postpone period." },
       { id: "seizure_recent", text: "First seizure within 3 months (known cause) or 6 months (unknown cause)", reason: "Postpone period." },
       { id: "stroke_recent", text: "Stroke within the last 6 months", reason: "May not be able to offer; depends on type." },
-      { id: "suicide_attempt_recent", text: "Single suicide attempt within the last 2 years", reason: "Postpone period." },
+      { id: "suicide_attempt_recent", text: "Single suicide attempt within the last 2 years", windowYears: 2, reason: "Postpone period." },
       { id: "pregnancy_complications", text: "Currently pregnant with complications (eclampsia, pre-eclampsia, gestational diabetes) — current or prior", reason: "Postpone." },
       { id: "copd_recent", text: "COPD with oxygen use or hospitalization within the last year", reason: "Postpone." },
       { id: "a1c_high", text: "Diabetes A1c above 10", reason: "Decline/postpone screen." },
@@ -1932,7 +1932,7 @@ const CARRIER_RULES = {
       { id: "active_symptom", text: "Uninvestigated active symptom under first-time evaluation", reason: "Uninvestigated symptom." },
       { id: "cancer_treatment", text: "Cancer undergoing treatment", reason: "Postpone until treatment complete." },
       { id: "mi_recent", text: "Heart attack within the last 6 months", reason: "Postpone period." },
-      { id: "suicide_attempt_recent", text: "Suicide attempt within the last 2 years", reason: "After 2 years, standard may be possible." },
+      { id: "suicide_attempt_recent", text: "Suicide attempt within the last 2 years", windowYears: 2, reason: "After 2 years, standard may be possible." },
       { id: "pregnancy_complications", text: "Current or complicated pregnancy", reason: "Postpone to 3 months postpartum." }
     ],
 
@@ -2387,7 +2387,7 @@ const CARRIER_RULES = {
       { id: "diabetes_complications", text: "Significant diabetes complications (kidney, eye, nerve, vascular)", reason: "Decline/postpone screen." },
       { id: "a1c_high", text: "Most recent A1c above 10", reason: "Poor control — decline/postpone screen." },
       { id: "pregnancy_complications", text: "Currently pregnant with gestational diabetes or complications", reason: "Postpone (gestational diabetes while pregnant — postpone)." },
-      { id: "suicide_attempt_recent", text: "Suicide attempt within the past year", reason: "Single attempt over 1 year — $5/M flat extra; over 5 years — Standard." }
+      { id: "suicide_attempt_recent", text: "Suicide attempt within the past year", windowYears: 1, reason: "Single attempt over 1 year — $5/M flat extra; over 5 years — Standard." }
     ],
 
     /* ---- Decline / specialist-review triggers ------------------------ */
@@ -3226,8 +3226,8 @@ CARRIER_RULES.national_life = {
     { id: "diabetes_complications", text: "Diabetes with complications (amputation, retinopathy, kidney or vascular disease) or with cardiac/stroke history or morbid obesity", reason: "Decline screen." },
     { id: "a1c_high", text: "Most recent A1c at or above 10 within the last year", reason: "Decline screen (National Life threshold is A1c 10+)." },
     { id: "heart_recent", text: "Heart attack, angioplasty, bypass, or heart/valve surgery within the last 6-12 months", reason: "Decline screen until stability." },
-    { id: "suicide_recent", text: "Suicide attempt within the last year (or more than one attempt within two years)", reason: "Decline screen." },
-    { id: "mental_hospitalization", text: "Mental disorder/PTSD requiring hospitalization or disability within the last year", reason: "Decline screen." },
+    { id: "suicide_recent", text: "Suicide attempt within the last year (or more than one attempt within two years)", windowYears: 1, multipleWindowYears: 2, reason: "Decline screen." },
+    { id: "mental_hospitalization", text: "Mental disorder/PTSD requiring hospitalization or disability within the last year", windowYears: 1, reason: "Decline screen." },
     { id: "pregnancy_complications", text: "Currently pregnant with gestational diabetes, toxemia, eclampsia, or pre-eclampsia", reason: "Reconsider at six weeks post partum." },
     { id: "cva_recent", text: "Stroke within the last year, or with diabetes or cardiac history", reason: "Decline screen." },
     { id: "epilepsy_recent", text: "Epilepsy/seizures diagnosed within the last year", reason: "Decline screen." }
@@ -3248,7 +3248,7 @@ CARRIER_RULES.national_life = {
     { id: "heart_surgery_recent", text: "Angioplasty/bypass/MI within 6 months, heart surgery within 6 months, valve replacement within 1 year", reason: "Uninsurable list." },
     { id: "cva_recent", text: "CVA (stroke) within one year or with diabetes/cardiac history", reason: "Uninsurable list." },
     { id: "epilepsy_recent", text: "Epilepsy/seizures diagnosed within one year", reason: "Uninsurable list." },
-    { id: "suicide_recent", text: "Suicide attempt within the last year or more than one within two years", reason: "Uninsurable list." },
+    { id: "suicide_recent", text: "Suicide attempt within the last year or more than one within two years", windowYears: 1, multipleWindowYears: 2, reason: "Uninsurable list." },
     { id: "adl_dependence", text: "Assistance needed with activities of daily living", reason: "Specialist review / decline screen." },
     { id: "facility_care", text: "Facility / hospice / home-health care or chronic wheelchair use", reason: "Strong specialist-review trigger." },
     { id: "criminal_active", text: "Charged with a felony; misdemeanor with probation/parole not released for one full year", reason: "Uninsurable list." },
@@ -5947,7 +5947,7 @@ const Engine = (() => {
     }
 
     for (const t of rules.declineTriggers || []) {
-      const hit = conditionDeclineHit(t.id, d, condIds, med, rules);
+      const hit = conditionDeclineHit(t.id, d, condIds, med, rules, t);
       if (hit) declineHits.push(t.id);
     }
 
@@ -5988,7 +5988,11 @@ const Engine = (() => {
       epilepsy_recent: ["seizures"]
     };
     for (const t of rules.postponeTriggers || []) {
-      if (!conditionPostponeHit(t.id, d, condIds, med, rules)) continue;
+      /* A trigger declared in BOTH lists (National Life's suicide_recent)
+         renders once as a decline gate — the postpone twin would duplicate the
+         same published screen on the same result page. */
+      if (declineSet.has(t.id)) continue;
+      if (!conditionPostponeHit(t.id, d, condIds, med, rules, t)) continue;
       const owning = triggerOwningConditions[t.id] || [];
       const alreadyGated = owning.some(cid => [...out.gates.postpone, ...out.gates.decline].some(g => g.id === cid));
       if (!alreadyGated) postponeHits.push(t.id);
@@ -6394,14 +6398,49 @@ const Engine = (() => {
     return out;
   }
 
+  /* Suicide-attempt recency, read from the wizard's "years since most recent
+     suicide attempt" field. Nothing disclosed -> unfired (an empty field is
+     no-attempt-disclosed, mirroring drugAbuseYears). A disclosed attempt with
+     an unparseable or negative recency counts as within-window — gate-first:
+     the missing fact is exactly what the carrier's screen asks about (same
+     convention as valve_recent). Each ruleset publishes its own window via
+     windowYears / multipleWindowYears on the trigger row (Banner/Foresters 2
+     years; MOO 1 year; National Life 1 year, or more than one within 2). */
+  function suicideAttemptRecentHit(d, t) { return disclosedYearsWithin(d, "suicideAttemptYears", t, 2); }
+
+  /* Shared core for the "years since <event>" wizard recency fields. Nothing
+     disclosed -> unfired (an empty field means the fact was not disclosed,
+     mirroring drugAbuseYears). A disclosed but unparseable or negative
+     recency counts as within-window — gate-first: the missing fact is
+     exactly what the carrier's screen asks about (same convention as
+     valve_recent). Each ruleset publishes its own window via windowYears on
+     the trigger row, with a per-trigger fallback for carrier-less calls. */
+  function disclosedYearsWithin(d, key, t, fallbackYears) {
+    if (!has(d, key)) return false; // nothing disclosed
+    const yrs = numOrNull(d[key]);
+    if (yrs === null) return true; // disclosed, recency unknown — gate-first
+    return yrs < ((t && t.windowYears) || fallbackYears);
+  }
+  function suicideRecentHit(d, t) {
+    if (!has(d, "suicideAttemptYears")) return false;
+    const yrs = numOrNull(d.suicideAttemptYears);
+    if (yrs === null) return true;
+    const w = (t && t.windowYears) || 1;
+    const mw = (t && t.multipleWindowYears) || 2;
+    // The multiple-attempts leg needs a recency: the flag alone can describe
+    // decades-old history and must never read as recent by itself.
+    return yrs < w || (isYes(d.suicideMultiple) && yrs < mw);
+  }
+
   /* conditionPostponeHit: evaluate the published condition-recency postpone
      triggers (M2) declared in each ruleset but previously never evaluated —
      a recent event on a disclosed condition must surface the carrier's
-     published postpone window. Suicide-recency (suicide_attempt_recent /
-     suicide_recent) and mental-hospitalization triggers have no collected
-     field (the wizard captures multiple attempts, not the attempt date) —
-     they return false and stay documented rather than guessed. */
-  function conditionPostponeHit(id, d, condIds, med, rules) {
+     published postpone window. Suicide-recency triggers (suicide_attempt_recent
+     at Banner/Transamerica/MOO, suicide_recent at National Life) fire from the
+     wizard's years-since-attempt field via the helpers above; National Life's
+     mental_hospitalization screen fires the same way from the wizard's
+     years-since-mental-health-hospitalization field. */
+  function conditionPostponeHit(id, d, condIds, med, rules, t) {
     const condOf = (ids) => condIds.some(cid => ids.includes(cid));
     const recentEventOn = (ids) => (d.conditions || []).some(c => ids.includes(c.id) && isYes(c.recentEvent));
     switch (id) {
@@ -6436,12 +6475,16 @@ const Engine = (() => {
       case "heart_recent": return recentEventOn(["cad", "heart_disease"]);
       case "cva_recent": return recentEventOn(["stroke"]);
       case "epilepsy_recent": return recentEventOn(["seizures"]);
+      case "suicide_attempt_recent": return suicideAttemptRecentHit(d, t);
+      case "suicide_recent": return suicideRecentHit(d, t);
+      case "mental_hospitalization": return disclosedYearsWithin(d, "mentalHospitalYears", t, 1); // National Life 1-year screen
       default: return false;
     }
   }
 
   /* conditionDeclineHit: map form flags to decline trigger ids */
-  function conditionDeclineHit(id, d, condIds, med, rules) {
+  function conditionDeclineHit(id, d, condIds, med, rules, t) {
+    const recentOn = (ids) => (d.conditions || []).some(c => ids.includes(c.id) && isYes(c.recentEvent));
     switch (id) {
       case "alcohol_active": return d.alcoholConcern === "active";
       case "drug_use_recent": {
@@ -6479,6 +6522,7 @@ const Engine = (() => {
       case "quadriplegia": return condIds.includes("paralysis") && d.paralysisType === "quadriplegia";
       case "stroke_severe": return condIds.includes("stroke") && (isYes(d.strokeSevere) || isYes(d.multipleStrokes));
       case "suicide_multiple": return isYes(d.suicideMultiple);
+      case "suicide_recent": return suicideRecentHit(d, t); // National Life uninsurable list
       case "transplant": return condIds.includes("transplant");
       case "bankruptcy_active": return isYes(d.bankruptcyActive);
       case "criminal_active": return isYes(d.criminalActive);
@@ -6486,6 +6530,34 @@ const Engine = (() => {
       case "facility_care": return d.livingSetting === "nursing" || d.livingSetting === "psychiatric" || d.livingSetting === "hospice" || isYes(d.homeHealth);
       case "wheelchair": return d.mobility === "wheelchair_chronic";
       case "oxygen_use": return isYes(d.oxygenUse);
+      /* National Life publishes these recency screens on BOTH lists; the
+         decline copy (Uninsurable list) is the stricter published outcome —
+         the postpone twin is deduped behind it via the declineSet skip in
+         run()'s postpone loop. */
+      case "cva_recent": {
+        if (recentOn(["stroke"])) return true; // stroke within one year
+        // or stroke with diabetes or cardiac history (published leg)
+        return condIds.includes("stroke") && condIds.some(cid => ["diabetes", "cad", "heart_disease"].includes(cid));
+      }
+      case "epilepsy_recent": return recentOn(["seizures"]); // diagnosed within one year
+      case "heart_surgery_recent": {
+        if (recentOn(["cad", "heart_disease"])) return true; // angioplasty/bypass/MI or heart surgery within 6 months
+        const v = (d.conditions || []).find(c => c.id === "heart_valve_prosthesis");
+        if (!v || !has(v, "implantYears")) return false;
+        const yrs = Number(v.implantYears);
+        return Number.isFinite(yrs) ? yrs < 1 : true; // valve replacement within 1 year
+      }
+      /* National Life uninsurable list: age 60+ without routine health care
+         and a physical within the last 24 months. */
+      case "no_routine_care": return Number(d.age) >= 60 && d.doctorVisits === "rarely";
+      /* Currently suspended/revoked license — collected as serious driving
+         (DUI/reckless/suspension) with years-since; unanswered recency is
+         gate-first. */
+      case "driving_no_license": {
+        if (!isYes(d.seriousDriving)) return false;
+        const yrs = has(d, "seriousDrivingYears") ? yearsAgo(d.seriousDrivingYears) : null;
+        return yrs === null || yrs < 1;
+      }
       default: return false;
     }
   }
@@ -6586,7 +6658,7 @@ const App = (() => {
       conditions: [],
       medicationsText: "",
       cirrhosis: "no", defibrillator: false, cardiomyopathy: false, dialysis: false, kidneyFailure: false, paralysisType: "paraplegia",
-      strokeSevere: false, multipleStrokes: false, suicideMultiple: false, oxygenUse: false,
+      strokeSevere: false, multipleStrokes: false, suicideMultiple: false, suicideAttemptYears: "", mentalHospitalYears: "", oxygenUse: false,
       a1cHigh: false, diabetesComplications: false, gastricBypassRecent: false, pregnancyComplications: false,
       famCardio: "",
       livingSetting: "", mobility: "", adlAssistance: "", homeHealth: false,
@@ -7258,11 +7330,10 @@ const App = (() => {
 
     const r2 = el("div", { class: "field-row" });
     r2.appendChild(field("Marijuana / cannabis use", selectInput("marijuana", [["none", "None"], ["infrequent", "Infrequent recreational"], ["frequent", "Frequent / more than weekly"], ["daily", "Daily use"], ["medicinal", "Medicinal"]])));
-    r2.appendChild(field("Multiple suicide attempts?", checkPill("suicideMultiple", "Yes")));
     c.appendChild(r2);
 
     const mjNote = (CARRIER_RULES[state.carrier].nicotine && CARRIER_RULES[state.carrier].nicotine.marijuana) ? CARRIER_RULES[state.carrier].nicotine.marijuana + " " : "";
-    c.appendChild(el("div", { class: "note-box" }, mjNote + "Decline screen: current alcohol abuse or abstinence < 2 years; non-marijuana drug use within 3 years or multiple relapses. Single suicide attempt within 2 years → postpone."));
+    c.appendChild(el("div", { class: "note-box" }, mjNote + "Decline screen: current alcohol abuse or abstinence < 2 years; non-marijuana drug use within 3 years or multiple relapses. Suicide-attempt and mental-health hospitalization history are captured with the mental-health conditions on the Medical history step."));
     return c;
   }
 
@@ -7270,6 +7341,34 @@ const App = (() => {
     const c = el("div", { class: "card" });
     c.appendChild(el("h2", {}, "Medical history"));
     c.appendChild(el("p", { class: "card-sub" }, "Select each condition disclosed in the interview. For each, record status, severity, control, and the condition-specific details — the estimator uses control, duration, complications, and treatment intensity, not just the diagnosis label."));
+
+    /* Mental-health history cluster — the suicide-attempt and mental-health
+       hospitalization recency screens render beside the Mental health
+       condition group so a producer captures the whole history in one place.
+       The recency answers drive carrier screens: most postpone a suicide
+       attempt within the published window (1–2 years by carrier); National
+       Life treats an attempt within 1 year — or more than one within 2
+       years — as a decline screen, and a mental-health hospitalization
+       within the last year as a postpone screen. */
+    function mentalHealthHistoryBlock() {
+      const wrap = el("div", {});
+      wrap.appendChild(el("h3", {}, "Mental health history"));
+      wrap.appendChild(el("p", { class: "card-sub" }, "Attempt and hospitalization recency drive carrier screens: most carriers postpone a suicide attempt within the published window (1–2 years); National Life treats an attempt within 1 year — or more than one within 2 years — as a decline screen, and a mental-health hospitalization within the last year as a postpone screen."));
+      const row1 = el("div", { class: "field-row" });
+      row1.appendChild(field("Multiple suicide attempts?", checkPill("suicideMultiple", "Yes")));
+      const sAttemptYrs = el("input", { type: "number", min: 0, step: 1, placeholder: "years since attempt" });
+      if (state.suicideAttemptYears !== "") sAttemptYrs.value = state.suicideAttemptYears;
+      sAttemptYrs.addEventListener("input", () => { state.suicideAttemptYears = sAttemptYrs.value; saveState(); });
+      row1.appendChild(field("Years since most recent suicide attempt", sAttemptYrs));
+      wrap.appendChild(row1);
+      const row2 = el("div", { class: "field-row" });
+      const mhYrs = el("input", { type: "number", min: 0, step: 1, placeholder: "years since hospitalization" });
+      if (state.mentalHospitalYears !== "") mhYrs.value = state.mentalHospitalYears;
+      mhYrs.addEventListener("input", () => { state.mentalHospitalYears = mhYrs.value; saveState(); });
+      row2.appendChild(field("Years since most recent mental-health hospitalization", mhYrs));
+      wrap.appendChild(row2);
+      return wrap;
+    }
 
     const rDoc = el("div", { class: "field-row" });
     rDoc.appendChild(field("How often do you see a doctor?", selectInput("doctorVisits", [["rarely", "Rarely — less than once a year"], ["yearly", "Yearly checkup"], ["regular", "Regular follow-ups (known conditions)"], ["frequent", "Frequently — monthly or more"]], { onChange: () => render() })));
@@ -7302,6 +7401,7 @@ const App = (() => {
         grid.appendChild(item);
       }
       c.appendChild(grid);
+      if (group === "Mental health") c.appendChild(mentalHealthHistoryBlock());
     }
 
     // Condition detail forms for selected conditions
