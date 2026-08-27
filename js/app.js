@@ -10,7 +10,7 @@ const App = (() => {
 
   const STORAGE_KEY = "hce_state_v1";
   const $ = (sel) => document.querySelector(sel);
-  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+  const $$ = (sel, scope) => Array.from((scope || document).querySelectorAll(sel));
 
   /* The carrier lineup — shared by the applicant-step panel, the comparison
      header, and anywhere else the carrier choice appears. */
@@ -21,7 +21,12 @@ const App = (() => {
     ["mutual_of_omaha", "Mutual of Omaha (United of Omaha)"],
     ["fg_quantum", "F&G Quantum (Fidelity & Guaranty)"],
     ["fg_pathsetter", "F&G Pathsetter (Fidelity & Guaranty)"],
-    ["national_life", "National Life Group (NL / LSW)"]
+    ["national_life", "National Life Group (NL / LSW)"],
+    ["amam", "American Amicable (Express Term / Term Made Simple)"],
+    ["john_hancock", "John Hancock (Simple Term with Vitality)"],
+    ["americo", "Americo (Eagle Select final expense)"],
+    ["quility", "Quility Term Plus (Legal & General America)"],
+    ["corebridge", "Corebridge / AGL (SimpliNow Legacy SIWL)"]
   ];
 
   let state = defaultState();
@@ -30,7 +35,7 @@ const App = (() => {
     return {
       carrier: "banner",
       age: "", sex: "", state: "", occupation: "",      occupationHazardous: "",
-      aviation: "", hazardousSports: "", foreignTravel: "", militaryService: "", foreignResidence: "",
+      aviation: "", hazardousSports: "", foreignTravel: "", militaryService: "", militaryRating: "", vaTreatment: "", foreignResidence: "",
       faceAmount: "", policyPurpose: "", income: "", existingCoverage: "", replacement: "", financing: "",
       ownership: "", premiumPayor: "",
       usedNicotine: "", nicotineEver: "", nicotineQuitYears: "", nicotineProduct: "cigarette", nicotineLastUse: "", nicotineAmount: "", cigarPerMonth: "", cotinineNegative: false, cigarComorbid: false,
@@ -168,6 +173,8 @@ const App = (() => {
   const CONDITION_CATALOG = [
     { id: "anxiety", name: "Anxiety", group: "Mental health" },
     { id: "depression", name: "Depression", group: "Mental health" },
+    { id: "major_depression", name: "Major depressive disorder (MDD)", group: "Mental health" },
+    { id: "ptsd", name: "Post-traumatic stress disorder (PTSD)", group: "Mental health" },
     { id: "bipolar", name: "Bipolar disorder", group: "Mental health" },
     { id: "schizophrenia", name: "Schizophrenia", group: "Mental health" },
     { id: "substance_treatment", name: "Alcohol/drug treatment history", group: "Substance use" },
@@ -175,16 +182,27 @@ const App = (() => {
     { id: "high_cholesterol", name: "High cholesterol", group: "Cardiovascular" },
     { id: "cad", name: "Coronary artery disease / angina", group: "Cardiovascular" },
     { id: "heart_disease", name: "Heart disease (CHF, cardiomyopathy, valve, device)", group: "Cardiovascular" },
+    { id: "pacemaker_icd", name: "Cardiac pacemaker / implanted defibrillator (ICD)", group: "Cardiovascular" },
+    { id: "heart_valve_prosthesis", name: "Heart valve prosthesis (metal / mechanical valve)", group: "Cardiovascular" },
     { id: "stroke", name: "Stroke / TIA", group: "Cardiovascular" },
     { id: "asthma", name: "Asthma", group: "Respiratory" },
     { id: "copd", name: "COPD / emphysema / chronic bronchitis", group: "Respiratory" },
     { id: "sleep_apnea", name: "Sleep apnea", group: "Respiratory" },
     { id: "diabetes", name: "Diabetes", group: "Metabolic" },
+    { id: "hypothyroidism", name: "Hypothyroidism", group: "Metabolic" },
+    { id: "hypogonadism", name: "Hypogonadism / low testosterone", group: "Metabolic" },
+    { id: "erectile_dysfunction", name: "Erectile dysfunction", group: "Metabolic" },
     { id: "kidney_disease", name: "Kidney disease", group: "Other" },
     { id: "liver_disease", name: "Liver disease", group: "Other" },
     { id: "hiv", name: "HIV / AIDS", group: "Other" },
     { id: "dementia", name: "Alzheimer's / dementia", group: "Neurological" },
     { id: "seizures", name: "Seizures / epilepsy", group: "Neurological" },
+    { id: "migraine", name: "Migraine / headache", group: "Neurological" },
+    { id: "chronic_fatigue", name: "Chronic fatigue syndrome", group: "Neurological" },
+    { id: "rem_sleep_disorder", name: "REM sleep behavior disorder", group: "Neurological" },
+    { id: "intracranial_aneurysm_clip", name: "Intracranial aneurysm clip", group: "Neurological" },
+    { id: "vp_shunt", name: "VP shunt / CSF shunt", group: "Neurological" },
+    { id: "neurostimulator", name: "Neurostimulator (spinal cord stimulator, etc.)", group: "Neurological" },
     { id: "autism", name: "Autism", group: "Other" },
     { id: "skin_cancer", name: "Skin cancer (basal / squamous)", group: "Cancer" },
     { id: "other_cancer", name: "Other cancer history", group: "Cancer" },
@@ -192,6 +210,9 @@ const App = (() => {
     { id: "mvp", name: "Mitral valve prolapse", group: "Cardiovascular" },
     { id: "cimt", name: "Carotid imaging (CIMT)", group: "Cardiovascular" },
     { id: "dysplastic_nevi", name: "Dysplastic nevi", group: "Other" },
+    { id: "cochlear_implant", name: "Cochlear implant", group: "Other" },
+    { id: "drug_infusion_pump", name: "Drug infusion pump (e.g., intrathecal / insulin pump)", group: "Other" },
+    { id: "ocular_monitoring", name: "Ocular monitoring system (e.g., Sensimed Triggerfish lens)", group: "Other" },
     { id: "transplant", name: "Organ transplant", group: "Other" },
     { id: "paralysis", name: "Paralysis", group: "Other" }
   ];
@@ -201,7 +222,7 @@ const App = (() => {
   function getConditionState(id) {
     let c = state.conditions.find(x => x.id === id);
     if (!c) {
-      c = { id, status: "current", severity: "mild", control: "good", resolvedYears: "", medCount: "", onsetAge: "", a1c: "", insulin: "no", complications: "no", onsetWithin1yr: false, suicide10yr: false, stableYears: "", residualSymptoms: false, recurrence: false, treatedWithin12mo: false, yearsSober: "", relapse: false, count: "", recentEvent: false, postponeTrigger: false, declineTrigger: false, defibrillator: false, cardiomyopathy: false };
+      c = { id, status: "current", severity: "mild", control: "good", resolvedYears: "", medCount: "", onsetAge: "", a1c: "", insulin: "no", complications: "no", onsetWithin1yr: false, suicide10yr: false, stableYears: "", residualSymptoms: false, recurrence: false, treatedWithin12mo: false, yearsSober: "", relapse: false, count: "", recentEvent: false, postponeTrigger: false, declineTrigger: false, defibrillator: false, cardiomyopathy: false, treatment: "", implantYears: "", investigated: false, selfHarm: false, alcoholUse: false };
       state.conditions.push(c);
       saveState();
     }
@@ -264,6 +285,31 @@ const App = (() => {
       r.appendChild(field("Residual symptoms despite treatment?", checkPillKey(c, "residualSymptoms", "Yes")));
       wrap.appendChild(r);
     }
+    /* Respiratory treatment question: how is the respiratory condition treated? */
+    if (id === "asthma" || id === "copd" || id === "sleep_apnea") {
+      const r = el("div", { class: "field-row" });
+      r.appendChild(field("How is it treated?", selectInputKey(c, "treatment", [["none", "No treatment needed"], ["inhaler", "Rescue inhaler only"], ["controller", "Daily controller medication (inhaler / pill)"], ["oral_steroids", "Oral steroids"], ["cpap", "CPAP / BiPAP"], ["oxygen", "Supplemental oxygen"], ["other", "Other / multiple"]])));
+      wrap.appendChild(r);
+    }
+    if (id === "ptsd") {
+      const r = el("div", { class: "field-row" });
+      r.appendChild(field("History of self-harm or suicide attempt?", checkPillKey(c, "selfHarm", "Yes")));
+      r.appendChild(field("Alcohol use disclosed?", checkPillKey(c, "alcoholUse", "Yes")));
+      wrap.appendChild(r);
+    }
+    if (id === "migraine") {
+      const r = el("div", { class: "field-row" });
+      r.appendChild(field("Fully investigated (imaging/evaluation complete)?", checkPillKey(c, "investigated", "Yes")));
+      wrap.appendChild(r);
+    }
+    if (id === "pacemaker_icd" || id === "heart_valve_prosthesis" || id === "intracranial_aneurysm_clip" || id === "vp_shunt" || id === "neurostimulator" || id === "cochlear_implant" || id === "drug_infusion_pump" || id === "ocular_monitoring") {
+      const r = el("div", { class: "field-row" });
+      const yr = el("input", { type: "number", min: 0, step: 1, placeholder: "years ago" });
+      if (c.implantYears !== "") yr.value = c.implantYears;
+      yr.addEventListener("input", () => { c.implantYears = yr.value; saveState(); });
+      r.appendChild(field("Implanted / placed how many years ago?", yr));
+      wrap.appendChild(r);
+    }
     if (id === "other_cancer" || id === "skin_cancer") {
       const r = el("div", { class: "field-row" });
       if (id === "other_cancer") {
@@ -322,7 +368,7 @@ const App = (() => {
       const notes = [];
       if (meta.ceilings && meta.ceilings.length) {
         const best = meta.ceilings[0];
-        notes.push(`Best possible class: ${classLabel(best.klass)} — ${best.when}.`);
+        notes.push(`Best possible class: ${classLabel(best.klass)}${best.when ? " — " + best.when : "."}`);
       }
       if (meta.postpone) notes.push("Postpone trigger: " + meta.postpone);
       if (meta.decline) notes.push("Decline/specialist screen: " + meta.decline);
@@ -337,6 +383,18 @@ const App = (() => {
   }
 
   /* helpers that operate directly on a condition object */
+  function selectInputKey(condObj, key, options) {
+    const sel = el("select", {});
+    sel.appendChild(el("option", { value: "" }, "— select —"));
+    for (const [val, label] of options) {
+      const o = el("option", { value: val }, label);
+      if (String(condObj[key]) === String(val)) o.selected = true;
+      sel.appendChild(o);
+    }
+    sel.addEventListener("change", () => { condObj[key] = sel.value; saveState(); });
+    return sel;
+  }
+
   function radioPillKey(condObj, key, options) {
     const wrap = el("div", { class: "radio-group" });
     for (const [val, label] of options) {
@@ -453,16 +511,29 @@ const App = (() => {
     c.appendChild(r3);
 
     const r4 = el("div", { class: "field-row" });
-    r4.appendChild(field("Military service", radioPill("militaryService", [["no", "No"], ["yes", "Yes — non-combat"], ["combat", "Yes — combat deployment"]])));
-    r4.appendChild(field("Lived outside the US recently?", radioPill("foreignResidence", [["no", "No"], ["short", "Yes — under 6 months"], ["long", "Yes — 6 months or more"]])));
+    r4.appendChild(field("Military service", radioPill("militaryService", [["no", "No"], ["veteran", "Veteran"], ["yes", "Yes — non-combat"], ["combat", "Yes — combat deployment"]])));
+    r4.appendChild(field("Currently live outside the USA", radioPill("foreignResidence", [["no", "No"], ["short", "Yes — under 6 months"], ["long", "Yes — 6 months or more"]])));
     c.appendChild(r4);
+
+    /* Military sub-questions: disability rating and VA treatment only matter
+       when service is disclosed — asking them for everyone would be noise. */
+    if (state.militaryService && state.militaryService !== "no") {
+      const r5 = el("div", { class: "field-row" });
+      r5.appendChild(field("VA disability rating", selectInput("militaryRating", [["none", "None"], ["lt30", "0–20%"], ["30to60", "30–60%"], ["60plus", "60% or more"], ["total", "Total / unemployable"]], { onChange: () => render() })));
+      r5.appendChild(field("Currently receiving VA treatment?", radioPill("vaTreatment", [["no", "No"], ["yes", "Yes"]])));
+      c.appendChild(r5);
+    }
 
     _radioHandlers.sex = () => {};
     _radioHandlers.occupationHazardous = () => {};
     _radioHandlers.aviation = () => {};
     _radioHandlers.hazardousSports = () => {};
     _radioHandlers.foreignTravel = () => {};
-    _radioHandlers.militaryService = () => {};
+    _radioHandlers.militaryService = (val) => {
+      // Disclosure drives the class caps; picking "No" clears the sub-answers.
+      if (val === "no") { state.militaryRating = ""; state.vaTreatment = ""; }
+      render();
+    };
     _radioHandlers.foreignResidence = () => {};
     return c;
   }
@@ -955,8 +1026,47 @@ const App = (() => {
     headTxt.appendChild(el("h2", {}, "Carrier comparison — same profile, all carriers"));
     headTxt.appendChild(el("p", { class: "card-sub" }, "The same answers run through every carrier ruleset. Classes are carrier-specific labels on a shared ladder (Preferred Plus/Elite → Standard → table-rated); a tobacco profile appears in each carrier's own tobacco class. Click a row to open that carrier's full estimate."));
     head.appendChild(headTxt);
-    head.appendChild(el("a", { class: "btn btn-cta", href: "https://lifeinsurancebrokeradvocate.com/contact", target: "_blank", rel: "noopener noreferrer" }, "Contact your broker advocate →"));
+    const headActions = el("div", { class: "compare-head-actions" });
+    const expandAllBtn = el("button", { class: "btn btn-ghost compare-all-btn", type: "button", "aria-label": "Expand or collapse every carrier row", title: "Expand every row's full gates & evidence, or collapse them all" }, "Expand all");
+    headActions.appendChild(expandAllBtn);
+    headActions.appendChild(el("a", { class: "btn btn-cta", href: "https://lifeinsurancebrokeradvocate.com/contact", target: "_blank", rel: "noopener noreferrer" }, "Contact your broker advocate →"));
+    head.appendChild(headActions);
     wrap.appendChild(head);
+
+    /* Shared expand logic: insert/remove the detail row for one carrier row,
+       and keep the expand-all button label in sync with the actual state. */
+    const rowRefs = [];
+    function toggleDetail(tr, expandBtn, row) {
+      const existing = tbody.querySelector('tr.compare-detail[data-carrier="' + row.id + '"]');
+      if (existing) { existing.remove(); expandBtn.classList.remove("expanded"); return; }
+      const dtr = el("tr", { class: "compare-detail", "data-carrier": row.id });
+      dtr.appendChild(el("td", { colspan: 6, class: "compare-detail-cell" }, compareDetailContent(row)));
+      tr.insertAdjacentElement("afterend", dtr);
+      expandBtn.classList.add("expanded");
+    }
+    function allExpanded() {
+      return rowRefs.length > 0 && rowRefs.every(r => r.expandBtn.classList.contains("expanded"));
+    }
+    function syncAllLabel() { expandAllBtn.textContent = allExpanded() ? "Collapse all" : "Expand all"; }
+    expandAllBtn.addEventListener("click", () => {
+      if (allExpanded()) {
+        rowRefs.forEach(r => {
+          const d = tbody.querySelector('tr.compare-detail[data-carrier="' + r.row.id + '"]');
+          if (d) d.remove();
+          r.expandBtn.classList.remove("expanded");
+        });
+      } else {
+        rowRefs.forEach(r => {
+          if (!r.expandBtn.classList.contains("expanded")) {
+            const dtr = el("tr", { class: "compare-detail", "data-carrier": r.row.id });
+            dtr.appendChild(el("td", { colspan: 6, class: "compare-detail-cell" }, compareDetailContent(r.row)));
+            r.tr.insertAdjacentElement("afterend", dtr);
+            r.expandBtn.classList.add("expanded");
+          }
+        });
+      }
+      syncAllLabel();
+    });
 
     /* Prominent primary-carrier panel — same treatment as the applicant step.
        Switching here re-runs the estimate and re-renders the table with the
@@ -994,15 +1104,12 @@ const App = (() => {
         title: "Show full gates & evidence",
         onclick: (e) => {
           e.stopPropagation();
-          const existing = tbody.querySelector('tr.compare-detail[data-carrier="' + row.id + '"]');
-          if (existing) { existing.remove(); expandBtn.classList.remove("expanded"); return; }
-          const dtr = el("tr", { class: "compare-detail", "data-carrier": row.id });
-          dtr.appendChild(el("td", { colspan: 6, class: "compare-detail-cell" }, compareDetailContent(row)));
-          tr.insertAdjacentElement("afterend", dtr);
-          expandBtn.classList.add("expanded");
+          toggleDetail(tr, expandBtn, row);
+          syncAllLabel();
         }
       }, "▸");
       tr.appendChild(el("td", { class: "compare-expand-cell" }, expandBtn));
+      rowRefs.push({ tr, expandBtn, row });
       tr.appendChild(el("td", { style: "font-weight:600" }, [rules.name, el("div", { class: "compare-version" }, rules.guide.version)]));
       tr.appendChild(el("td", {}, el("span", { class: "klass-chip klass", style: `background:${cn.color}` }, cn.name)));
       tr.appendChild(el("td", {}, compareLimiting(row)));
@@ -1128,6 +1235,9 @@ const App = (() => {
     sum.appendChild(el("h2", {}, "Case triage summary"));
     const sumList = el("ul", { class: "check-list" });
     out.summaryLines.forEach(l => sumList.appendChild(el("li", {}, l)));
+    if (out.notes && out.notes.length) {
+      out.notes.forEach(n => sumList.appendChild(el("li", { class: "note-line" }, n)));
+    }
     if (out.comorbidityFlags && out.comorbidityFlags.length) {
       sumList.appendChild(el("li", {}, "Combination flag: " + out.comorbidityFlags.join("; ") + " — materially different from an isolated diagnosis; specialist review recommended."));
     }
@@ -1244,7 +1354,24 @@ const App = (() => {
       }
       if (age !== null && age >= 75) evUl.appendChild(el("li", {}, "Activities of Daily Living Questionnaire required (age 75+)."));
       evUl.appendChild(el("li", {}, "Non-medical issue limits: check amount against product limits (" + rules.evidence.ageAmountNote.split(".")[0] + ")."));
+      evUl.appendChild(el("li", {}, "PlanRight whole-life lane (separate simplified-issue product): its own build chart applies — check build against the PlanRight minimum/maximum weights — and any history of congestive heart failure, regardless of when diagnosed or treated, is not eligible for PlanRight."));
+      const pr = rules.planright && rules.planright.drugRules;
+      if (pr) {
+        const prWords = String(state.medicationsText || "").toLowerCase().split(/[^a-z]+/).filter(Boolean);
+        const prHit = (list) => list.some(w => prWords.includes(w));
+        const prNeph = prHit(pr.nephropathy), prNeuro = prHit(pr.neuropathy), prDiab = prHit(pr.diabetes);
+        const prA = prHit(pr.listA), prB = prHit(pr.listB), prC = prHit(pr.listC);
+        if (prA && prB && prC) evUl.appendChild(el("li", {}, "PlanRight drug-rule flag: a List A (ACE/ARB) + List B (beta-blocker) + List C (diuretic) medication combination is disclosed — PlanRight would not be eligible for coverage on this profile."));
+        else if ((prNeph || prNeuro) && prDiab) evUl.appendChild(el("li", {}, "PlanRight drug-rule flag: a nephropathy/neuropathy medication combined with a diabetes medication is disclosed (within the past 2 years) — PlanRight would offer at most the Basic death benefit."));
+      }
     } else if (out.carrier === "Transamerica") {
+      if (age !== null && age <= 85 && Number(state.faceAmount || 0) >= 1000) {
+        const feBands = (rules.feLane && rules.feLane.faceBands) || [];
+        const feMax = feBands.reduce((m, b) => { const lo = parseInt(b.ages.split("-")[0], 10); const hi = parseInt(b.ages.split("-")[1], 10); return (age >= lo && age <= hi) ? b.max : m; }, 0);
+        if (Number(state.faceAmount || 0) <= feMax) {
+          evUl.appendChild(el("li", {}, "Final Expense Solutions lane applies at this age/face band (Immediate Solution / 10-Pay / Easy Solution, $1,000-" + feMax.toLocaleString() + ") — decisions are Preferred / Standard / Graded / Decline with no table ratings; nicotine within 12 months receives a tobacco rating; the Activity Credit (3+ days/week exercise) can improve a build-only Standard to Preferred."));
+        }
+      }
       evUl.appendChild(el("li", {}, "Transamerica orders all requirements through approved vendors; digital underwriting (iGO e-App) may produce a decision within minutes."));
       if (age !== null && age >= 70 && Number(state.faceAmount || 0) >= 100000) {
         evUl.appendChild(el("li", {}, "Minnesota Cognitive Acuity Screen required (age 70+, face amount $100,000+)."));
@@ -1300,6 +1427,42 @@ const App = (() => {
       if (Number(state.faceAmount || 0) >= 2000000) evUl.appendChild(el("li", {}, "Face over $2,000,000: APS + Personal Financial Questionnaire (form 1392) + Electronic Inspection Report required."));
       if (Number(state.faceAmount || 0) >= 5000000) evUl.appendChild(el("li", {}, "Face over $5,000,000: EKG added; income verification (4506T/W2/1099); third-party verified financials (age 70+ at $5M+, all ages at $10M+)."));
       if (age !== null && age >= 60) evUl.appendChild(el("li", {}, "Age 60+ requires routine health care with a physical within the last 24 months — otherwise declined."));
+    } else if (out.carrier === "American Amicable") {
+      evUl.appendChild(el("li", {}, "Simplified-issue workflow: application, MIB check, pharmaceutical (prescription) facility check, and MVR on every application — no exams or blood work required."));
+      evUl.appendChild(el("li", {}, "Telephone interview by age/amount — Term Made Simple: mandatory at age 65+; Express Term: none at 18-55, ages 56-65 only for the Critical Illness Rider at 100%, ages 66-75 at all amounts."));
+      if (age !== null && age >= 66) evUl.appendChild(el("li", {}, "Telephone interview required at this age (ages 66-75, all amounts)."));
+      if (Number(state.faceAmount || 0) > 300000 && age !== null && age >= 46) {
+        evUl.appendChild(el("li", {}, "Express Term maximum face at ages 46-75 is $300,000 — this amount exceeds it; verify the applicable product before submitting."));
+      }
+      if (age !== null && age >= 30 && state.premiumPayor === "third_party") {
+        evUl.appendChild(el("li", {}, "Third-party premium payor with the insured age 30 or older — American Amicable does not accept these applications (spouse, business, or business partner payors are accepted)."));
+      }
+      if (age !== null && age >= 50 && age <= 85 && Number(state.faceAmount || 0) >= 2500 && Number(state.faceAmount || 0) <= 50000) {
+        evUl.appendChild(el("li", {}, "Dignity Solutions final-expense lane applies at this age/face band — the plan tier (Immediate / Graded / Return of Premium) is set by the health answers; coverage is declined if any of the first three health questions are answered yes."));
+      }
+      if (age !== null && age >= 20 && age <= 75 && Number(state.faceAmount || 0) >= 25000 && Number(state.faceAmount || 0) <= 300000) {
+        evUl.appendChild(el("li", {}, "Home Certainty mortgage-protection lane applies at this age/face band — simplified-issue level term to age 95 (10/15/20/25/30-yr premium periods), $25,000-$300,000, shares the Express Term build chart; a current mortgage is required for eligibility."));
+      }
+      evUl.appendChild(el("li", {}, "Underwriting is standard through Table 4 on an accept/reject basis — no table ratings are offered; conditions on the impairment-guide decline list and build outside the chart should not be submitted."));
+    } else if (out.carrier === "John Hancock") {
+      evUl.appendChild(el("li", {}, "Simple Term with Vitality is underwritten from the simplified application plus database checks — MIB, MVR, prescription history check, and identification. No paramedical exam is used for this product."));
+      evUl.appendChild(el("li", {}, "Any nicotine, tobacco, or smoking-cessation product within the past 12 months renders the tobacco risk class; a post-issue quality review may request medical records and a policy may be rescinded for material misrepresentation."));
+      if (age !== null && (age < 20 || age > 60)) evUl.appendChild(el("li", {}, `Simple Term with Vitality is available only at ages 20-60 — this age is outside the product's eligibility.`));
+      if (Number(state.faceAmount || 0) > 500000) evUl.appendChild(el("li", {}, "Coverage is limited to $500,000 and may not replace in-force coverage."));
+    } else if (out.carrier === "Americo") {
+      evUl.appendChild(el("li", {}, "Eagle Select uses a 100% instant-decision eApplication — the health questions plus MIB, prescriptions, medical information, and other third-party services generate the offer (Eagle Select 1 / 2 / 3 or decline) in minutes."));
+      evUl.appendChild(el("li", {}, "The Quit Smoking Advantage lets smokers receive non-nicotine rates for the first three policy years."));
+      if (age !== null && (age < 40 || age > 85)) evUl.appendChild(el("li", {}, `Eagle Select is available at ages 40-85 — this age is outside the product's eligibility.`));
+      if (Number(state.faceAmount || 0) > 40000) evUl.appendChild(el("li", {}, "Eagle Select maximum face is $40,000 (Eagle Select 1 & 2) / $25,000 (Eagle Select 3)."));
+    } else if (out.carrier === "Quility Term Plus (LGA)") {
+      evUl.appendChild(el("li", {}, "QTP is designed for instant decisions on about 70% of applicants and 20% APS-free decisions within 24 hours — underwritten and issued by Banner Life (William Penn in NY; QTP is not available in NY)."));
+      evUl.appendChild(el("li", {}, "No table ratings — a risk above Standard is declined, not table-rated. Half of intentional weight loss over the last 12 months is added to the current build."));
+      evUl.appendChild(el("li", {}, "Two-year contestability and suicide provisions apply."));
+    } else if (out.carrier === "Corebridge / AGL") {
+      evUl.appendChild(el("li", {}, "SimpliNow Legacy offers instant underwriting decisions with no underwriters — the electronic application plus prescription data; the condition table assigns Level / Graded / Decline by condition and time frame."));
+      evUl.appendChild(el("li", {}, "The prescription list flags medications that impact the death benefit (most result in decline); combinations of conditions can result in worse than listed decisions."));
+      if (age !== null && (age < 50 || age > 80)) evUl.appendChild(el("li", {}, `SimpliNow Legacy is available at ages 50-80 — this age is outside the product's eligibility.`));
+      evUl.appendChild(el("li", {}, "American General GIWL (guaranteed issue, ages 50-80, $5,000-$25,000, no health questions, graded years 1-2) is a separate lane for applicants who cannot pass even the simplified health screen."));
     }
     evUl.appendChild(el("li", {}, "Authorization: MIB, FCRA consumer report, prescription history, and medical-record authorization required."));
     evUl.appendChild(el("li", {}, "Condition-specific questionnaires: " + questionnaireNames(state.conditions) + "."));
@@ -1564,13 +1727,17 @@ const App = (() => {
     criminal_history: "Criminal history disclosed — carrier review",
     unexplained_care: "Frequent care without disclosed condition — confirm",
     foreign_residence: "Foreign residence — eligibility review",
-    conflicting_disclosure: "Nicotine history conflict — confirm"
+    conflicting_disclosure: "Nicotine history conflict — confirm",
+    combat_exposure: "Combat exposure — best class capped pending records",
+    va_disability: "VA disability rating — class capped pending records",
+    va_treatment: "VA treatment without disclosed condition — confirm"
   };
   const FLAG_CLASS = {
     needs_aps: "flag-warn", needs_exam: "flag-warn", likely_table: "flag-warn",
     possible_decline: "flag-danger", manual_review: "flag-warn", missing_material_data: "flag-warn",
     accelerated_uw_possible: "flag-ok",    financial_review: "flag-warn", undisclosed_meds: "flag-warn", criminal_history: "flag-warn",
-    unexplained_care: "flag-warn", foreign_residence: "flag-warn", conflicting_disclosure: "flag-danger"
+    unexplained_care: "flag-warn", foreign_residence: "flag-warn", conflicting_disclosure: "flag-danger",
+    combat_exposure: "flag-warn", va_disability: "flag-warn", va_treatment: "flag-warn"
   };
 
   const DOMAIN_LABELS = {
