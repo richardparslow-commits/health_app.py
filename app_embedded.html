@@ -471,14 +471,54 @@ table.domain-table { width: 100%; border-collapse: collapse; font-size: 13.5px; 
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 24px 64px rgba(8, 20, 33, .4);
-  max-width: 660px;
+  max-width: 720px;
   width: 100%;
-  padding: 30px 32px;
+  padding: 26px 30px 24px;
   border-top: 6px solid var(--teal);
   margin: auto;
 }
-.ack-card h2 { margin: 0 0 6px; font-size: 22px; color: var(--navy); }
-.ack-statement { font-size: 15px; margin: 10px 0; }
+.ack-brand {
+  font-size: 11.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.ack-card h2 { margin: 0; font-size: 23px; color: var(--navy); }
+.ack-sub { font-size: 13.5px; color: var(--muted); margin: 3px 0 12px; }
+.ack-section {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 11px 14px;
+  margin: 10px 0;
+}
+.ack-section h3 { margin: 0 0 6px; font-size: 14.5px; color: var(--navy); }
+.ack-list { margin: 0; padding-left: 18px; font-size: 13.5px; line-height: 1.55; color: var(--ink); }
+.ack-list li + li { margin-top: 5px; }
+.ack-not { border-left: 4px solid var(--danger); background: #fdf3f4; }
+.ack-not h3 { color: var(--danger); }
+.ack-privacy { border-left: 4px solid var(--teal); background: var(--teal-light); }
+.ack-contact-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 14px 0 4px;
+}
+.btn-ack-contact {
+  display: inline-block;
+  background: var(--navy);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  text-decoration: none;
+}
+.btn-ack-contact:hover { filter: brightness(1.15); }
+.btn-ack-contact:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
+.ack-contact-note { font-size: 12px; color: var(--muted); }
 .ack-disclaimer {
   background: var(--teal-light);
   border-left: 4px solid var(--teal);
@@ -785,17 +825,43 @@ table.domain-table { width: 100%; border-collapse: collapse; font-size: 13.5px; 
 <body>
 
 <!-- Mandatory acknowledgment gate: the wizard stays inert behind this overlay
-     until the user accepts that the estimate is non-binding and that each
-     carrier has the final and absolute say on underwriting. -->
+     until the user accepts the full acknowledgment — the tool is only an
+     estimating aid, it is not an offer of life insurance, nothing entered is
+     collected or stored, and each carrier has the final and absolute say. -->
 <div class="ack-gate hidden" id="ack-gate" role="dialog" aria-modal="true" aria-labelledby="ack-title">
   <div class="ack-card">
-    <h2 id="ack-title">Acknowledgment required</h2>
-    <p class="ack-statement">
-      This tool helps <strong>estimate</strong> a person&rsquo;s health class for life-insurance
-      pre-underwriting and case triage. The estimate is <strong>preliminary and non-binding</strong>.
-      All carriers have the <strong>final and absolute say</strong> on the client&rsquo;s underwriting
-      and health class.
-    </p>
+    <div class="ack-brand">HealthClassEstimator</div>
+    <h2 id="ack-title">Before you continue</h2>
+    <p class="ack-sub">Acknowledgment &amp; disclaimer &mdash; please read before using this tool.</p>
+
+    <div class="ack-section">
+      <h3>What this tool is</h3>
+      <ul class="ack-list">
+        <li>A <strong>free estimating tool</strong> that helps a producer or applicant gauge a person&rsquo;s <strong>likely life-insurance health class</strong> before an application is submitted.</li>
+        <li>An <strong>estimate only</strong> &mdash; preliminary, non-binding, and based solely on the information entered.</li>
+        <li>Subject in every case to the carrier: <strong>each carrier has the final and absolute say</strong> on underwriting and health class.</li>
+      </ul>
+    </div>
+
+    <div class="ack-section ack-not">
+      <h3>What this tool is not</h3>
+      <ul class="ack-list">
+        <li><strong>Not an offer of life insurance</strong> &mdash; not a quote, not a guarantee of coverage or price, and not an application.</li>
+        <li>It does not issue insurance, bind coverage, or take the place of a carrier underwriter&rsquo;s decision.</li>
+        <li>It is <strong>not medical advice</strong> and not a medical diagnostic tool.</li>
+        <li>A favorable estimate does not mean any carrier will offer coverage &mdash; carriers may obtain medical records, prescription history, lab results, consumer reports, and MIB information that change the outcome.</li>
+      </ul>
+    </div>
+
+    <div class="ack-section ack-privacy">
+      <h3>Your privacy &mdash; nothing is collected or stored</h3>
+      <ul class="ack-list">
+        <li><strong>We do not collect or store any data.</strong> Nothing you enter is transmitted to us or to anyone else.</li>
+        <li>Every answer stays <strong>in this browser, on this device only</strong>. The optional &ldquo;Save draft&rdquo; feature writes to your own browser&rsquo;s local storage &mdash; nowhere else.</li>
+        <li>There are no accounts and no answer tracking. Clearing your browser data removes everything permanently.</li>
+      </ul>
+    </div>
+
     <div class="ack-disclaimer">
       <strong>Legal disclaimer.</strong> This tool is not a medical diagnostic tool and does not
       issue insurance, bind coverage, or replace a carrier underwriter&rsquo;s decision. The estimate
@@ -807,10 +873,15 @@ table.domain-table { width: 100%; border-collapse: collapse; font-size: 13.5px; 
       coverage. Temporary coverage exists only if the exact carrier receipt conditions are met, not
       because this tool gives a favorable estimate.
     </div>
+
+    <div class="ack-contact-row">
+      <a class="btn-ack-contact" id="ack-contact" href="https://lifeinsurancebrokeradvocate.com/" target="_blank" rel="noopener noreferrer">Questions? Connect with the broker &rarr;</a>
+      <span class="ack-contact-note">lifeinsurancebrokeradvocate.com</span>
+    </div>
+
     <label class="ack-check">
       <input type="checkbox" id="ack-check">
-      <span>I have read and acknowledge the above. I understand this estimate is not binding and
-      that each carrier has the final and absolute say on the client&rsquo;s underwriting and health class.</span>
+      <span>I have read and accept the acknowledgment and disclaimer above &mdash; including that this tool is <strong>only an estimating aid</strong>, that it is <strong>not an offer of life insurance</strong>, that <strong>no information I enter is collected or stored</strong>, and that <strong>each carrier has the final and absolute say</strong> on underwriting and health class.</span>
     </label>
     <button class="btn btn-primary" id="ack-accept" type="button" disabled>I acknowledge &mdash; continue</button>
     <p class="ack-hint">You must acknowledge before entering any applicant information.</p>
@@ -897,7 +968,7 @@ table.domain-table { width: 100%; border-collapse: collapse; font-size: 13.5px; 
 
 
 <script>
-window.HCE_VERSION = "62"; // stamped by build-embedded.js
+window.HCE_VERSION = "63"; // stamped by build-embedded.js
 </script>
 <script>
 /* =========================================================================
@@ -6558,6 +6629,24 @@ const Engine = (() => {
         const yrs = has(d, "seriousDrivingYears") ? yearsAgo(d.seriousDrivingYears) : null;
         return yrs === null || yrs < 1;
       }
+      /* National Life uninsurable list: abdominal aortic aneurysm present, or
+         surgically corrected within the past 6 months. A repaired aneurysm
+         with an unanswered repair date is gate-first (unknown recency counts
+         as within-window). Other carriers take the conservative
+         no-published-row Standard fallback in evalMedical. */
+      case "aneurysm": {
+        const aaa = (d.conditions || []).find(c => c.id === "abdominal_aneurysm");
+        if (!aaa) return false;
+        if (aaa.status === "current") return true; // present
+        if (aaa.status !== "resolved") return false;
+        if (aaa.repairedWithin6mo === true) return true;
+        if (aaa.repairedWithin6mo === false) return false;
+        const yrs = has(aaa, "resolvedYears") ? yearsAgo(aaa.resolvedYears) : null;
+        return yrs === null || yrs < 0.5;
+      }
+      /* National Life uninsurable list: SSDI/DI disability for depression,
+         PTSD, or other medical (non-musculoskeletal) impairments. */
+      case "disabled": return isYes(d.disabledBenefits);
       default: return false;
     }
   }
@@ -6658,7 +6747,7 @@ const App = (() => {
       conditions: [],
       medicationsText: "",
       cirrhosis: "no", defibrillator: false, cardiomyopathy: false, dialysis: false, kidneyFailure: false, paralysisType: "paraplegia",
-      strokeSevere: false, multipleStrokes: false, suicideMultiple: false, suicideAttemptYears: "", mentalHospitalYears: "", oxygenUse: false,
+      strokeSevere: false, multipleStrokes: false, suicideMultiple: false, suicideAttemptYears: "", mentalHospitalYears: "", disabledBenefits: false, oxygenUse: false,
       a1cHigh: false, diabetesComplications: false, gastricBypassRecent: false, pregnancyComplications: false,
       famCardio: "",
       livingSetting: "", mobility: "", adlAssistance: "", homeHealth: false,
@@ -6793,6 +6882,7 @@ const App = (() => {
     { id: "heart_disease", name: "Heart disease (CHF, cardiomyopathy, valve, device)", group: "Cardiovascular" },
     { id: "pacemaker_icd", name: "Cardiac pacemaker / implanted defibrillator (ICD)", group: "Cardiovascular" },
     { id: "heart_valve_prosthesis", name: "Heart valve prosthesis (metal / mechanical valve)", group: "Cardiovascular" },
+    { id: "abdominal_aneurysm", name: "Abdominal aortic aneurysm (AAA)", group: "Cardiovascular" },
     { id: "stroke", name: "Stroke / TIA", group: "Cardiovascular" },
     { id: "asthma", name: "Asthma", group: "Respiratory" },
     { id: "copd", name: "COPD / emphysema / chronic bronchitis", group: "Respiratory" },
@@ -6915,6 +7005,12 @@ const App = (() => {
       const r = el("div", { class: "field-row" });
       r.appendChild(field("Fully investigated (imaging/evaluation complete)?", checkPillKey(c, "investigated", "Yes")));
       wrap.appendChild(r);
+    }
+    if (id === "abdominal_aneurysm") {
+      wrap.appendChild(el("div", { class: "note-box" }, "Status: Current = aneurysm present (surveillance or untreated). Resolved = surgically repaired — also answer the repair-recency question below. National Life declines a present aneurysm or one repaired within the past 6 months; other carriers review individually."));
+      const rAaa = el("div", { class: "field-row" });
+      rAaa.appendChild(field("Surgically repaired within the past 6 months?", checkPillKey(c, "repairedWithin6mo", "Yes")));
+      wrap.appendChild(rAaa);
     }
     if (id === "pacemaker_icd" || id === "heart_valve_prosthesis" || id === "intracranial_aneurysm_clip" || id === "vp_shunt" || id === "neurostimulator" || id === "cochlear_implant" || id === "drug_infusion_pump" || id === "ocular_monitoring") {
       const r = el("div", { class: "field-row" });
@@ -7423,6 +7519,12 @@ const App = (() => {
     r.appendChild(field("Gastric bypass within 6 months?", checkPill("gastricBypassRecent", "Yes")));
     r.appendChild(field("Oxygen use?", checkPill("oxygenUse", "Yes")));
     c.appendChild(r);
+    /* National Life's uninsurable-list disability screen (SSDI/DI for
+       depression, PTSD, or other medical — non-musculoskeletal — issues).
+       A form-level fact, so it lives beside the other carrier-trigger flags. */
+    const rDis = el("div", { class: "field-row" });
+    rDis.appendChild(field("Receiving SSDI / disability benefits for a medical (non-injury) condition?", checkPill("disabledBenefits", "Yes")));
+    c.appendChild(rDis);
     /* Complicated-pregnancy postpone screen (Banner, Transamerica, MOO, F&G,
        National Life publish a postpone row). Female-applicant question — the
        flag only produces a gate for carriers that declare the trigger. */
@@ -8483,19 +8585,21 @@ const App = (() => {
 
     const body = el("div", { class: "ack-record-body" });
     body.appendChild(el("p", { class: "ack-record-statement" },
-      "The undersigned acknowledges that this tool is used to help estimate a person's health class for life-insurance pre-underwriting and case triage. The estimate is preliminary and non-binding. All carriers have the final and absolute say on the client's underwriting and health class."));
+      "The undersigned acknowledges that this tool is used only to help estimate a person's health class for life-insurance pre-underwriting and case triage; it is not an offer of life insurance, a quote, or medical advice, and it does not issue insurance or bind coverage. No information entered into the tool is collected or stored — entries remain in the user's own browser on their own device. The estimate is preliminary and non-binding, and all carriers have the final and absolute say on the client's underwriting and health class."));
     const disc = el("div", { class: "ack-record-disclaimer" });
     disc.appendChild(el("strong", {}, "Legal disclaimer. "));
     disc.appendChild(document.createTextNode("This tool is not a medical diagnostic tool and does not issue insurance, bind coverage, or replace a carrier underwriter's decision. The estimate is based only on disclosed information. The carrier may obtain medical records, prescription history, laboratory/paramedical results, consumer reports, and information from other insurers or MIB, subject to authorization — those sources can change the estimate. Never suggest withholding information or \"answering around\" a condition: applications state that answers influence acceptance and that material misrepresentation or nondisclosure can jeopardize coverage. Temporary coverage exists only if the exact carrier receipt conditions are met, not because this tool gives a favorable estimate."));
     body.appendChild(disc);
     body.appendChild(el("p", { class: "ack-record-check" },
-      "I have read and acknowledge the above. I understand this estimate is not binding and that each carrier has the final and absolute say on the client's underwriting and health class."));
+      "I have read and accept the acknowledgment and disclaimer above — including that this tool is only an estimating aid, that it is not an offer of life insurance, that no information entered is collected or stored, and that each carrier has the final and absolute say on the client's underwriting and health class."));
     sheet.appendChild(body);
 
     const links = el("div", { class: "ack-record-links" });
     links.appendChild(el("div", { class: "ack-record-links-label" }, "Consumer-report record requests:"));
     links.appendChild(el("div", {}, "MIB Consumer File — https://www.mib.com/request_your_record.html"));
     links.appendChild(el("div", {}, "Milliman IntelliScript — https://www.rxhistories.com/for-consumers/insurance/"));
+    links.appendChild(el("div", { class: "ack-record-links-label" }, "Producer contact:"));
+    links.appendChild(el("div", {}, "https://lifeinsurancebrokeradvocate.com/"));
     sheet.appendChild(links);
 
     const sig = el("div", { class: "ack-record-sig" });
@@ -8579,7 +8683,10 @@ const App = (() => {
      the final and absolute say on the client's underwriting and health class.
      Acceptance persists per browser (localStorage); the gate re-appears until
      accepted. */
-  const ACK_KEY = "hce_ack_v1";
+  /* v2: the acknowledgment was expanded (not-an-offer + no-data-collection
+     sections added) — the key bump re-presents the gate to everyone so every
+     user accepts the current terms. */
+  const ACK_KEY = "hce_ack_v2";
 
   /* Read the stored acknowledgment. Records are { accepted, acceptedAt };
      the legacy bare "1" (pre-dated-record) still counts as accepted. */
@@ -8610,7 +8717,7 @@ const App = (() => {
 
     check.addEventListener("change", () => { accept.disabled = !check.checked; });
     accept.addEventListener("click", () => {
-      try { localStorage.setItem(ACK_KEY, JSON.stringify({ accepted: true, acceptedAt: new Date().toISOString() })); } catch (e) { /* ignore */ }
+      try { localStorage.setItem(ACK_KEY, JSON.stringify({ accepted: true, acceptedAt: new Date().toISOString(), version: 2 })); } catch (e) { /* ignore */ }
       gate.classList.add("hidden");
       render();
     });
