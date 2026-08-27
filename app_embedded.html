@@ -350,6 +350,7 @@ select:invalid { color: var(--muted); }
 .result-hero .hero-meta { display: flex; gap: 18px; margin-top: 14px; flex-wrap: wrap; }
 .result-hero .hero-meta .meta-item { font-size: 13px; }
 .result-hero .hero-meta .meta-item strong { display: block; font-size: 17px; }
+.result-hero .hero-meta .meta-item .hero-conf-missing { font-size: 11px; font-weight: 400; line-height: 1.35; color: rgba(255,255,255,.85); margin-top: 3px; max-width: 230px; }
 
 .range-strip { display: flex; align-items: center; gap: 8px; margin: 6px 0 0; flex-wrap: wrap; }
 .range-chip {
@@ -406,6 +407,20 @@ table.domain-table { width: 100%; border-collapse: collapse; font-size: 13.5px; 
 .compare-table tr.compare-current { background: #f0faf6; outline: 2px solid #0e7a5f; outline-offset: -2px; }
 .compare-table tr.compare-current:hover { background: #e4f4ec; }
 .compare-version { font-size: 11px; color: var(--muted); font-weight: 400; margin-top: 2px; }
+.compare-lane { font-size: 11px; font-weight: 500; line-height: 1.25; margin-top: 3px; color: #14532d; border-left: 2px solid #2f9e6a; padding-left: 5px; }
+.compare-best-badge { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: 1px 6px; border-radius: 3px; margin-left: 6px; vertical-align: middle; color: #fff; background: #b45309; }
+.klass-chip.best { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #b45309; }
+.compare-item { display: block; margin: 2px 0; }
+.compare-tag { display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: .04em; padding: 1px 5px; border-radius: 3px; margin-right: 4px; vertical-align: 1px; }
+.tag-decline { color: #fff; background: #b3364a; }
+.tag-postpone { color: #fff; background: #8a5fb8; }
+.tag-limit { color: #5b4334; background: #f0dfc4; }
+.tag-ev { color: #0f4c81; background: #dce9f5; }
+.compare-nogate { color: var(--muted); font-style: italic; }
+.compare-bottom-line { margin-top: 12px; padding: 10px 12px; background: #eef7f3; border-left: 4px solid #0e7a5f; border-radius: 4px; font-size: 13px; line-height: 1.45; color: #123a2e; }
+.compare-lane-caveat { margin-top: 8px; padding: 8px 10px; background: #fdf3e0; border: 1px solid #e6c98a; border-left: 4px solid #c78b2c; border-radius: 4px; font-size: 12.5px; line-height: 1.4; color: #5b4334; }
+.compare-read-list { margin: 4px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.55; }
+.compare-read-list li { margin: 3px 0; }
 #btn-compare.btn-compare {
   background: #0e7a5f; color: #fff; border: none; font-weight: 700;
 }
@@ -761,6 +776,7 @@ table.domain-table { width: 100%; border-collapse: collapse; font-size: 13.5px; 
 }
 .footer-link-btn:hover { color: var(--navy); }
 .print-sheet-table .print-version { font-size: 9px; color: #66707c; font-weight: 400; }
+.print-sheet-table .print-lane { font-size: 8.5px; font-weight: 500; color: #14532d; margin-top: 2px; }
 .print-sheet-foot { margin-top: 12px; border-top: 1px solid #c3ccd4; padding-top: 7px; font-size: 9.5px; color: #55606e; }
 .print-sheet-sources { margin-top: 4px; font-size: 8.5px; color: #7b8490; }
 
@@ -881,7 +897,7 @@ table.domain-table { width: 100%; border-collapse: collapse; font-size: 13.5px; 
 
 
 <script>
-window.HCE_VERSION = "57"; // stamped by build-embedded.js
+window.HCE_VERSION = "58"; // stamped by build-embedded.js
 </script>
 <script>
 /* =========================================================================
@@ -2626,17 +2642,23 @@ const CARRIER_RULES = {
       { id: "anxiety", name: "Anxiety", ceilings: [{ klass: "standard", when: "controlled, no hospitalization, no time lost from work (acceptable list)" }], worse: "Controlled, well-followed, stable and no comorbid impairment." },
       { id: "depression", name: "Depression", ceilings: [{ klass: "standard", when: "other than bipolar, no hospitalization, no time lost from work (acceptable list)" }], worse: "Mental disorder requiring 2+ medications, hospitalization, or disability — decline." },
       { id: "bipolar", name: "Bipolar disorder", ceilings: [{ klass: "table", table: 4, when: "stable on limited treatment — individual consideration (decline list applies to bipolar requiring 2+ medications, hospitalization, or disability)" }], worse: "Decline list: mental disorder requiring treatment with two or more medications, hospitalization, or disability." },
+      { id: "major_depression", name: "Major depressive disorder (MDD)", ceilings: [{ klass: "standard", when: "depression other than bipolar with no hospitalization and no time lost from work (acceptable list)" }], worse: "Mental disorder requiring 2+ medications, hospitalization, or disability — decline." },
+      { id: "ptsd", name: "Post-traumatic stress disorder (PTSD)", ceilings: [{ klass: "standard", when: "PTSD without bipolar/schizophrenia features, controlled, no hospitalization or disability (under the mental-disorder accept framework)" }], worse: "Mental disorder including bipolar disorder, PTSD, or schizophrenia requiring 2+ medications, hospitalization, or disability — decline." },
       { id: "schizophrenia", name: "Schizophrenia", ceilings: [], decline: "Mental disorder including schizophrenia requiring treatment with two or more medications, hospitalization, or disability — decline." },
       { id: "substance_treatment", name: "Alcohol/drug treatment history", ceilings: [{ klass: "standard", when: "drug use more than 5 years ago; no history of alcohol or substance abuse for Preferred" }], worse: "Alcohol abuse — decline; drug use within the last 5 years — decline; chronic opioid or narcotic use — decline." },
       { id: "hypertension", name: "High blood pressure", ceilings: [{ klass: "preferred_plus", when: "readings within class limits (treatment allowed if 2-year average meets parameters)" }], note: "Hypertension other than pulmonary hypertension is on the acceptable list." },
       { id: "high_cholesterol", name: "High cholesterol", ceilings: [{ klass: "preferred_plus", when: "total and ratio within class limits (treatment allowed if 2-year average meets parameters)" }], note: "Hyperlipidemia is on the acceptable list." },
       { id: "cad", name: "Coronary artery disease / angina", ceilings: [{ klass: "table", table: 4, when: "stable older history — individual consideration" }], postpone: "Heart attack, bypass, angioplasty, or valve procedure within the last 5 years — decline screen until 5 years post-event.", worse: "Heart surgery, bypass, angioplasty, valve repair/replacement, or heart attack/MI in the last 5 years, or at any time in combination with tobacco use, diabetes, or stroke — decline." },
       { id: "heart_disease", name: "Heart disease (CHF, cardiomyopathy, valve, device)", ceilings: [{ klass: "table", table: 4, when: "stable older history — individual consideration" }], postpone: "Heart attack/surgery within the last 5 years — decline screen.", decline: "Heart surgery, bypass, angioplasty, valve repair/replacement, or MI within the last 5 years (or at any time with tobacco, diabetes, or stroke) — decline.", worse: "Aneurysm, cardiomyopathy, or CHF — decline screen." },
+      { id: "pacemaker_icd", name: "Cardiac pacemaker / ICD", ceilings: [{ klass: "table", table: 4, when: "stable older device, no recent implant, no underlying rateable cardiac disease" }], postpone: "Pacemaker/ICD implanted within the last 5 years — decline screen under the heart-surgery rule.", worse: "Device in the setting of an underlying coronary/valvular condition, or combined with tobacco, diabetes, or stroke — decline." },
+      { id: "heart_valve_prosthesis", name: "Heart valve prosthesis (metal / mechanical valve)", ceilings: [{ klass: "table", table: 4, when: "stable older valve replacement without recent event or anticoagulation complications" }], postpone: "Valve repair/replacement within the last 5 years — decline screen.", worse: "Valve surgery within the last 5 years, or at any time with tobacco, diabetes, or stroke — decline." },
       { id: "stroke", name: "Stroke / TIA", ceilings: [{ klass: "table", table: 4, when: "single TIA more than 6 months ago, age 46 and up (acceptable list)" }], postpone: "Stroke/CVA within the last 5 years, or two or more TIAs — decline screen.", worse: "Stroke or CVA within the last 5 years, or two or more TIAs — decline." },
       { id: "asthma", name: "Asthma", ceilings: [{ klass: "standard", when: "mild, well followed, controlled & stable (acceptable list)" }], worse: "Asthma in applicants under age 6 — decline; respiratory disorders (emphysema, COPD, tuberculosis, sarcoidosis) — decline." },
       { id: "copd", name: "COPD / emphysema / chronic bronchitis", ceilings: [], decline: "Respiratory disorder including emphysema, COPD, tuberculosis, or sarcoidosis — decline." },
       { id: "sleep_apnea", name: "Sleep apnea", ceilings: [{ klass: "standard", when: "treated (acceptable list)" }] },
+      { id: "migraine", name: "Migraine / headache", ceilings: [{ klass: "standard", when: "migraine with full evaluation completed (acceptable list)" }] },
       { id: "diabetes", name: "Diabetes", ceilings: [{ klass: "standard", when: "Type 2 with A1c below 7 in the last year and no complications (preferred requires no diabetes history)" }], worse: "Type 1 or Type 2 with A1c of 7 or above within the last year, or with neuropathy, retinopathy, kidney or heart disease, or stroke history — decline." },
+      { id: "hypothyroidism", name: "Hypothyroidism", ceilings: [{ klass: "standard", when: "hyperthyroidism or hypothyroidism (including controlled Graves' / Hashimoto's) — acceptable list" }] },
       { id: "kidney_disease", name: "Kidney disease", ceilings: [], decline: "Kidney disease including polycystic kidney disease, chronic kidney disease, dialysis, or kidney transplant — decline." },
       { id: "liver_disease", name: "Liver disease", ceilings: [], decline: "Liver disorder including hepatitis and cirrhosis — decline." },
       { id: "hiv", name: "HIV / AIDS", ceilings: [], decline: "HIV/AIDS — decline." },
@@ -3799,12 +3821,33 @@ CARRIER_RULES.john_hancock = {
     { id: "substance_treatment", name: "Alcohol / substance abuse treatment", decline: "History of treatment for alcohol or substance abuse, or advised to discontinue/limit use by a medical professional — not eligible." },
     { id: "anxiety", name: "Anxiety", ceilings: [{ klass: "preferred" }] },
     { id: "depression", name: "Depression", ceilings: [{ klass: "preferred" }] },
+    { id: "hypertension", name: "High blood pressure", ceilings: [{ klass: "preferred", when: "hypertension on one medication (age 35+ — a published Preferred acceptance criterion)" }], worse: "Hypertension requiring more than one medication, or on antihypertensive medication under age 35 — confirm against the simplified-issue offer." },
     { id: "asthma", name: "Asthma", ceilings: [{ klass: "preferred_plus" }], decline: "Asthma treated with one medication (excluding oral steroids) is acceptable for Preferred." },
     { id: "diabetes", name: "Diabetes", ceilings: [{ klass: "standard" }], decline: "Type I diabetics under age 40, diabetics who smoke, and diabetes with complications or serious risk factors are not eligible; Type I over 40 and Type II diagnosed after 30 without serious risk factors are accepted at Select." }
   ],
   conditionModels: {
     other_cancer: { declineWithinYears: 999, waitYears: 0, afterCeiling: "decline" }
   },
+  /* Simple Term with Vitality prescription drug exclusion list (guide page
+     4): "There is a likelihood that proposed insureds will be declined if they
+     are currently taking or have taken any of the following medications."
+     The app's generic-medication cross-check must therefore flag these as a
+     decline gate independent of the disclosed-condition screen. The engine
+     matches whole normalized words, so generic single-word names are used. */
+  rxDecline: [
+    "abacavir", "aripiprazole", "acamprosate", "alemtuzumab", "anastrozole", "apixaban", "azathioprine",
+    "benztropine", "buprenorphine", "carvedilol", "chlorambucil", "clopidogrel", "clozapine",
+    "cyclophosphamide", "cyclosporine", "dabigatran", "dalfampridine", "darbepoetin", "digoxin",
+    "disulfiram", "donepezil", "efavirenz", "elvitegravir", "enoxaparin", "epoetin", "fentanyl",
+    "galantamine", "haloperidol", "hydroxyurea", "imatinib", "indinavir", "interferon", "letrozole",
+    "levodopa", "carbidopa", "lithium", "lurasidone", "melphalan", "memantine", "mercaptopurine",
+    "methadone", "methotrexate", "morphine", "naltrexone", "natalizumab", "nelfinavir", "olanzapine",
+    "paliperidone", "pegfilgrastim", "peginterferon", "pramipexole", "pyridostigmine", "quetiapine",
+    "ranolazine", "rasagiline", "ribavirin", "risperidone", "rivaroxaban", "rivastigmine", "saquinavir",
+    "tacrine", "tacrolimus", "tamoxifen", "thioridazine", "thiothixene", "tofacitinib",
+    "trihexyphenidyl", "warfarin", "zidovudine", "ziprasidone"
+  ],
+  rxDeclineNote: "Simple Term with Vitality prescription drug exclusions (guide page 4): there is a likelihood the proposed insured will be declined if currently taking or having taken any listed medication. The list is not all-inclusive — additional medications or combinations may be added at John Hancock's discretion.",
   autoDeclineIds: ["hiv", "dementia", "copd", "parkinsons", "multiple_sclerosis", "md", "kidney_disease", "liver_disease", "transplant", "stroke", "cad", "heart_disease", "schizophrenia", "substance_treatment"],
   declineTriggers: [
     { id: "criminal_active", text: "Criminal record — not eligible for Simple Term with Vitality", reason: "Eligibility: 'History of criminal record' disqualifies." },
@@ -5002,6 +5045,17 @@ const Engine = (() => {
           const onset = has(c, "onsetAge") ? numOrNull(c.onsetAge) : null;
           const a1c = has(c, "a1c") ? Number(c.a1c) : null;
           const dm = rules.diabetes || null;
+          // Medication-combination control override: an insulin analog in the
+          // medication list indicates insulin-dependent (or insulin-treated)
+          // diabetes even if the "Insulin?" box was left untouched, and 3+
+          // distinct diabetes medications indicate polypharmacy more severe
+          // than "well controlled monotherapy". Both cap an overstated good-
+          // control claim conservatively rather than trusting it blindly.
+          const combo = medCombinationCheck(rules, d, "diabetes");
+          const insulinTreated = isYes(c.insulin) || combo.hasInsulin;
+          const polypharmacy = combo.count >= 3;
+          if (combo.hasInsulin && !isYes(c.insulin)) details.push(`Insulin detected in the medication list (${combo.count} diabetes med(s)) — not marked as insulin use on the form; treated as insulin-treated diabetes for severity review.`);
+          if (polypharmacy) details.push(`Combination therapy detected (${combo.count} distinct diabetes medications) — heavier than monotherapy; verify control.`);
           // Carrier may publish a stricter A1c decline threshold (e.g., F&G: A1c 7 or above within the last year)
           if (a1c !== null && (dm && dm.a1cDeclineMin !== undefined ? a1c >= dm.a1cDeclineMin : a1c > 10)) {
             decline.push({ id: c.id, text: `Diabetes A1c ${a1c} ${dm && dm.a1cDeclineMin !== undefined ? "≥ " + dm.a1cDeclineMin : "> 10"} — decline/postpone screen.` });
@@ -5022,14 +5076,15 @@ const Engine = (() => {
             ceiling = "decline";
           } else if (dm) {
             // carrier-published type model (e.g., MOO: Type 1 -> Table 2-8, Type 2 -> Standard-Table 8)
-            const isType1 = c.type === "type1" || (onset !== null && onset < 20);
+            const isType1 = c.type === "type1" || insulinTreated || (onset !== null && onset < 20);
             ceiling = isType1 ? (dm.type1Ceiling || "table") : (dm.type2Ceiling || "standard");
-            details.push(`Diabetes: ${isType1 ? "Type 1 (or onset before age 20)" : "Type 2"} — ${ceiling} best case per the impairment table.`);
-          } else if (onset !== null && onset >= 50 && isNo(d.usedNicotine) && control === "good") {
+            details.push(`Diabetes: ${isType1 ? "Type 1 (or onset before age 20 / medication-detected insulin)" : "Type 2"} — ${ceiling} best case per the impairment table.`);
+          } else if (onset !== null && onset >= 50 && isNo(d.usedNicotine) && control === "good" && !insulinTreated && !polypharmacy) {
             ceiling = "standard_plus";
           } else if (onset !== null && onset >= 50) {
             ceiling = "standard_plus"; // still the ceiling, but flagged
             details.push(`Diabetes: onset ${onset} — verify control; Standard Plus ceiling with good control.`);
+            if (control === "good" && (insulinTreated || polypharmacy)) ceiling = worstOf(ceiling, "standard");
           } else {
             ceiling = "standard";
             details.push(`Diabetes: onset before 50 — below the Standard Plus ceiling; review individually.`);
@@ -5037,6 +5092,14 @@ const Engine = (() => {
           if (c.insulin === "yes" && c.tobaccoCurrent) {
             // tobacco + insulin diabetes is heavily rated
             ceiling = worstOf(ceiling || "standard", "table");
+          }
+          // Medication-combination escalation: insclusion of insulin in the
+          // med list (or 3+ distinct diabetes drugs) caps an otherwise-claimed
+          // good control at Standard for carriers that tier good-control type 2
+          // at Standard Plus — the heavier combination never gets the monotherapy
+          // Standard Plus treatment.
+          if (polypharmacy && onset !== null && onset >= 50 && control === "good" && !insulinTreated) {
+            ceiling = worstOf(ceiling, "standard");
           }
           if (rules.id === "amam" && (isYes(c.insulin) || isYes(c.tobaccoCurrent))) {
             // American Amicable: diabetes with insulin use or tobacco use in the
@@ -5391,6 +5454,46 @@ const Engine = (() => {
     return { klass: null, missing: false, meds: matched, disclosed, undisclosed, apsTriggers, detail: parts.join(" ") || "Entered medications matched no reference entries." };
   }
 
+  /* Insulin is a step-change in diabetes severity vs. oral monotherapy: every
+     modeled carrier's diabetes row prices insulin-dependent disease heavier
+     (e.g. Quility requires non-insulin to accept, MOO Type 1 -> Table 2-8). If
+     insulin appears in the medication list the disclosure control claim must not
+     read as "well controlled monotherapy". The aliases are the map's insulin
+     analog generics/brands. */
+  const INSULIN_MEDS = new Set(["insulin", "lantus", "levemir", "humalog", "novolog", "humulin", "novolin", "toujeo", "tresiba", "apidra", "basaglar"]);
+
+  /**
+   * Medication-combination control check. For a disclosed condition, re-reads
+   * the entered medication list and counts how many distinct matched drugs treat
+   * that condition, and whether any is insulin. The carrier's own control
+   * criteria are monotherapy-graded ("controlled on 2 or fewer medications" for
+   * HTN, "non-insulin" for aceptable QTP diabetes), so a larger combination or
+   * insulin signals worse-than-claimed control even when the user ticked
+   * control "good". Pure advisory: it never declares a new diagnosis and only
+   * caps an overstated good-control claim (or raises a combo flag), never a
+   * blanket decline.
+   * Returns { count, hasInsulin, distinctCount }.
+   */
+  function medCombinationCheck(rules, d, conditionId) {
+    const raw = d.medicationsText;
+    if (!raw || !String(raw).trim()) return { count: 0, hasInsulin: false };
+    const tokens = String(raw).split(/[,;\n]+/).map(t => t.trim()).filter(Boolean);
+    const distinct = new Set();
+    let hasInsulin = false;
+    for (const t of tokens) {
+      const norm = normalizeMed(t);
+      if (!norm) continue;
+      const entry = MEDICATION_MAP.find(e => medMatches(norm, e));
+      if (!entry || entry.condition !== conditionId) continue;
+      // Insulin analogs indicate insulin-dependent diabetes even if the user
+      // did not tick the "Insulin? Yes" box on the detail form.
+      const words = norm.split(" ").filter(w => w.length >= 4);
+      if (words.some(w => INSULIN_MEDS.has(w))) hasInsulin = true;
+      distinct.add(norm); // distinct normalized name = distinct drug (a combo within one condition)
+    }
+    return { count: distinct.size, hasInsulin };
+  }
+
   /* ---------- functional status / ADLs -------------------------------- */
 
   function evalFunctional(d) {
@@ -5610,6 +5713,35 @@ const Engine = (() => {
 
   /* ---------- confidence ---------------------------------------------- */
 
+  /* Grade a disclosed condition's submission depth 0..4 by how much
+     disease-specific evidence the producer captured, not just that a box was
+     ticked. Detail is what actually moves a class estimate (A1c, labs,
+     medication count/names, treatment intensity, duration/stability,
+     complication flags) — so it is weighted far above a single answered form
+     field in the confidence meter. An untouched condition (all defaults) scores
+     the base disclosure only. Returns 0..4. */
+  function conditionDetailDepth(c) {
+    const hasNum = v => v !== "" && v !== undefined && v !== null && !isNaN(Number(v));
+    let depth = 0;
+    // 1) Base disclosure: status/severity/control answered (app defaults are
+    //    "current / mild / good" — treated as the claimed-control baseline).
+    if (c.severity || c.control || c.status) depth += 1;
+    // 2) Duration / stability context (onset age, years stable, resolved years,
+    //    sobriety years) — a long stable history is constructive evidence.
+    if (hasNum(c.onsetAge) || hasNum(c.stableYears) || hasNum(c.resolvedYears) || hasNum(c.yearsSober)) depth += 1;
+    // 3) Lab / quantitative marker — the single highest-signal evidence class:
+    //    A1c for diabetes, medication count, implant years, nevus count.
+    if (hasNum(c.a1c) || hasNum(c.medCount) || hasNum(c.implantYears) || hasNum(c.count)) depth += 1;
+    // 4) Treatment-intensity / complication flags actually engaged (insulin,
+    //    complications, respiratory treatment, recent event, full migraine
+    //    workup, device flags, recurrence, relapse, self-harm, etc.).
+    for (const k of ["insulin", "complications", "treatment", "recentEvent", "investigated", "defibrillator", "cardiomyopathy", "recurrence", "relapse", "residualSymptoms", "selfHarm", "alcoholUse", "treatedWithin12mo", "suicide10yr", "onsetWithin1yr", "dialysis", "cirrhosis"]) {
+      const v = c[k];
+      if (v === true || (typeof v === "string" && v !== "" && v !== "no" && v !== "none")) { depth += 1; break; }
+    }
+    return depth;
+  }
+
   function computeConfidence(d, flags) {
     let score = 0, total = 0, missing = [];
     const checks = [
@@ -5636,11 +5768,23 @@ const Engine = (() => {
         if (has(d, k)) score++; else missing.push(label);
       }
     }
+    /* Condition detail is weighted far above a single answered field: each
+       disclosed condition carries up to 10 confidence points graded by how much
+       disease-specific evidence (A1c, labs, medication count/names, treatment,
+       duration) was captured — not the number of boxes ticked. A well-documented
+       condition contributes full credit; a bare checkbox contributes only its
+       base disclosure, so two profiles with the same number of answered boxes
+       can land in different confidence bands. */
     if (d.conditions && d.conditions.length) {
-      total++;
-      const allDetailed = d.conditions.every(c => c.control && c.severity);
-      if (allDetailed) score++;
-      else missing.push("condition control details");
+      const perCondition = 10;
+      total += d.conditions.length * perCondition;
+      let condScore = 0;
+      for (const c of d.conditions) condScore += conditionDetailDepth(c) * 2.5;
+      score += condScore;
+      /* An explicitly flagged missing A1c or undisclosed-med mismatch is real
+         uncertainty, not a field-counting artifact — surfaced as a missing signal. */
+      const bare = d.conditions.some(c => conditionDetailDepth(c) <= 1);
+      if (bare) missing.push("condition-specific detail (labs, treatment, stability)");
     }
     if (flags.includes("undisclosed_meds")) missing.push("medication-condition mismatch");
     if (flags.includes("missing_material_data")) missing.push("key data");
@@ -7246,6 +7390,29 @@ const App = (() => {
 
   /* ---------- cross-carrier comparison ------------------------------- */
 
+  /* Product / underwriting lane for each carrier, surfaced on the comparison
+     table so a producer sees that a "Preferred" at a simplified-issue or
+     final-expense carrier is a different product than at a fully underwritten
+     term carrier — the classes share labels but are not directly comparable. */
+  const CARRIER_LANES = {
+    banner:          { kind: "fully_underwritten", label: "Fully underwritten term",                 note: "Full medical/paramedical underwriting — comparably rated tables." },
+    mutual_of_omaha: { kind: "fully_underwritten", label: "Fully underwritten term/permanent",        note: "Tables and flat extras; Express simplified lanes are separate." },
+    transamerica:    { kind: "fully_underwritten", label: "Fully underwritten term/IUL",             note: "Tables and flat extras; Final Expense Solutions is a separate lane." },
+    fg_quantum:      { kind: "database_underwritten", label: "DB-driven term/IUL (no CD exam)",      note: "MIB/RX/MVR review; a paramedical exam won't improve the class." },
+    fg_pathsetter:   { kind: "database_underwritten", label: "DB-driven IUL (exam-free to $1M)",    note: "InstApproval / MIB / RX/MVR; no exam required through $1M." },
+    foresters:       { kind: "fully_underwritten", label: "Non-medical term/UL",                     note: "No tables in the modeled lanes; PlanRight whole life is separate." },
+    national_life:   { kind: "database_underwritten", label: "Streamlined / EZ term & IUL",          note: "MIB, RX database, MVR — no medical testing for Streamlined/EZ." },
+    amam:            { kind: "simplified_issue",      label: "Simplified-issue term (accept/reject)", note: "Standard through Table 4, issued at Standard rates; no tables." },
+    john_hancock:    { kind: "simplified_issue",      label: "Simplified-issue term (Simple Term)",    note: "Accepted Standard / Select; database checks only, no exam." },
+    quility:         { kind: "simplified_issue",      label: "Simplified-issue term (QTP)",           note: "Accept/reject; no tables; declined on many impairments that a fully underwritten carrier might still rate." },
+    corebridge:      { kind: "final_expense",        label: "Simplified-issue final expense",         note: "Knockout-question instant decision; no tables or flat extras." },
+    americo:         { kind: "final_expense",        label: "Simplified-issue final expense",         note: "Eagle Select plans; no tables; built on simple health questions." }
+  };
+
+  function carrierLane(id) {
+    return (CARRIER_LANES[id] && CARRIER_LANES[id].label) || "";
+  }
+
   /* Run the same assembled profile through every carrier ruleset and return
      { carrierId, out } rows, ordered by the carrier select list. */
   function runComparison() {
@@ -7253,42 +7420,109 @@ const App = (() => {
     return Object.keys(CARRIER_RULES).map(id => ({ id, out: Engine.run(id, d) }));
   }
 
-  function compareClassName(out, rules) {
-    if (out.finalClass === "manual_review") return { name: "Manual review", color: "#5b6b7b" };
-    if (out.finalClass === "flat_extra" && out.tobaccoClass && out.flatExtra) {
-      // Tobacco + hazardous avocation: the flat-extra lane sits on the base
-      // class (e.g., F&G Preferred Tobacco + flat extra) — don't let the
-      // tobacco branch collapse it to plain "Standard Tobacco".
-      const base = (rules.classInfo[out.flatExtra.baseClass] || { name: out.flatExtra.baseClass.replace(/_/g, " ") }).name;
-      return { name: base + " Tobacco + flat extra", color: "#b8860b" };
-    }
+  /* Issue 5 — one source of truth for the outcome name/color across every view
+     (comparison table, print sheet, expanded rows, and the results hero), so
+     the same profile never renders two different labels. Fixes three real
+     inconsistencies: Foresters Tobacco Plus showed "Tobacco Plus" in the hero
+     but "Preferred Tobacco" in the table; a tobacco flat-extra showed its base
+     + flat-extra name in the table but plain "Flat extra" in the hero; and a
+     declined tobacco row showed "Standard Tobacco" in the table because the
+     tobacco branch ran before the gate. Gates (manual/decline/postpone)
+     always come first here. */
+  function outcomeClassLabel(out, rules) {
+    if (out.finalClass === "manual_review") return { name: "Manual underwriting review", color: "#5b6b7b" };
     const ci = rules.classInfo[out.finalClass] || {};
+    if (out.finalClass === "decline" || out.finalClass === "postpone") {
+      return { name: ci.name || out.finalClass.replace(/_/g, " "), color: ci.color || (out.finalClass === "decline" ? "#b3364a" : "#8a5fb8") };
+    }
+    if (out.finalClass === "flat_extra" && out.flatExtra) {
+      if (out.tobaccoClass) {
+        // Tobacco + hazardous avocation: the flat-extra lane sits on the base
+        // class (e.g., F&G Preferred Tobacco + flat extra) — don't collapse it
+        // to plain "Standard Tobacco".
+        const base = (rules.classInfo[out.flatExtra.baseClass] || { name: out.flatExtra.baseClass.replace(/_/g, " ") }).name;
+        return { name: base + " Tobacco + flat extra", color: "#b8860b" };
+      }
+      return { name: ci.name || "Flat extra", color: ci.color || "#c2691b" };
+    }
     if (out.tobaccoClass) {
-      const tName = (out.finalClass === "preferred_plus" || out.finalClass === "preferred") ? "Preferred Tobacco" :
-        (out.finalClass === "table" ? "Table-rated (tobacco base)" : "Standard Tobacco");
-      return { name: tName, color: "#b8860b" };
+      if (rules.id === "foresters" && out.tobaccoPlus) return { name: "Tobacco Plus", color: "#b8860b" };
+      if (out.finalClass === "preferred_plus" || out.finalClass === "preferred") return { name: "Preferred Tobacco", color: "#b8860b" };
+      if (out.finalClass === "table") return { name: "Table-rated (tobacco base)", color: "#b8860b" };
+      return { name: "Standard Tobacco", color: "#8a6d1a" };
     }
     return { name: ci.name || out.finalClass.replace(/_/g, " "), color: ci.color || "#5b6b7b" };
   }
 
+  function compareClassName(out, rules) {
+    return outcomeClassLabel(out, rules);
+  }
+
+  /* Issue 6 — synthesized plain-English bottom line for the comparison table.
+     Reads the ranked rows and compresses them into one or two sentences the
+     producer can say out loud: what the best likely lane is (and who offers
+     it), whether any carriers gate the profile, and a lane-comparability
+     caveat when the best lane is simplified-issue or final-expense rather than
+     fully underwritten term. */
+  function compareBottomLine(rows) {
+    const ranked = rows.map(r => ({
+      id: r.id,
+      out: r.out,
+      lane: CARRIER_LANES[r.id],
+      rank: CLASS_INDEX[r.out.finalClass] != null ? CLASS_INDEX[r.out.finalClass] : CLASS_INDEX.decline,
+      label: outcomeClassLabel(r.out, CARRIER_RULES[r.id]).name
+    }));
+    const bestRank = Math.min(...ranked.map(x => x.rank));
+    if (bestRank >= CLASS_INDEX.manual_review) {
+      return "Every modeled carrier postpones or declines this profile — hold the case for specialist review (or an alternate product) before an estimate is reliable.";
+    }
+    const best = ranked.filter(x => x.rank === bestRank);
+    const bestNames = best.map(x => CARRIER_RULES[x.id].name);
+    const nameList = bestNames.slice(0, 3).join(", ") + (bestNames.length > 3 ? ` (and ${bestNames.length - 3} more)` : "");
+    const parts = [`Best likely outcome: ${best[0].label} at ${nameList}.`];
+    const gatedCount = ranked.filter(x => x.out.gates.decline.length || x.out.gates.postpone.length).length;
+    if (gatedCount) parts.push(`${gatedCount} carrier${gatedCount > 1 ? "s" : ""} decline or postpone this profile — see the gates column.`);
+    const bestLane = best[0].lane;
+    if (bestLane && bestLane.kind !== "fully_underwritten" && bestLane.kind !== "database_underwritten") {
+      parts.push(`The best lane is ${bestLane.label.toLowerCase()} — not directly comparable to fully underwritten term.`);
+    }
+    return parts.join(" ");
+  }
+
+  /* Issue 3 — scannable gate/evidence tags. Returns DOM nodes (el-built) so
+     the comparison columns read as colored DECLINE / POSTPONE / EVIDENCE
+     prefixes instead of a wall of text — a hard gate is instantly separable
+     from a nice-to-have evidence item, on screen and in the print sheet. */
+  const COMPARE_TAG_LABEL = { decline: "Decline", postpone: "Postpone", limit: "Factor", ev: "Evidence" };
+  function compareTag(kind) {
+    return el("span", { class: "compare-tag tag-" + kind, "aria-hidden": "true" }, (COMPARE_TAG_LABEL[kind] || kind).toUpperCase());
+  }
+  function tagItem(kind, text) {
+    return el("span", { class: "compare-item" }, [compareTag(kind), document.createTextNode(" " + text)]);
+  }
+
   function compareEvidence(out) {
     const list = (out.evidence && out.evidence.list) || [];
-    if (!list.length) return "Application only";
+    if (!list.length) return [el("span", { class: "compare-nogate" }, "Application only")];
     const shown = list.slice(0, 3);
     const more = list.length - shown.length;
-    return shown.join("; ") + (more > 0 ? ` (+${more} more)` : "");
+    const nodes = shown.map(it => tagItem("ev", it));
+    if (more > 0) nodes.push(document.createTextNode(` (+${more} more)`));
+    return nodes;
   }
 
   function compareLimiting(row) {
-    const { id, out } = row;
-    const parts = [];
-    if (out.gates.decline.length) parts.push("Decline: " + out.gates.decline.map(g => g.text || g.id).slice(0, 2).join("; "));
-    if (out.gates.postpone.length) parts.push("Postpone: " + out.gates.postpone.map(g => g.text || g.id).slice(0, 2).join("; "));
-    if (!parts.length) {
-      [...out.limitingFactors, ...(out.outsideFactors || [])].slice(0, 3).forEach(l => parts.push(DOMAIN_LABELS[l.domain] || l.domain));
+    const { out } = row;
+    const items = [];
+    out.gates.decline.slice(0, 2).forEach(g => items.push({ kind: "decline", text: g.text || g.id }));
+    out.gates.postpone.slice(0, 2).forEach(g => items.push({ kind: "postpone", text: g.text || g.id }));
+    if (!items.length) {
+      [...out.limitingFactors, ...(out.outsideFactors || [])].slice(0, 3).forEach(l => items.push({ kind: "limit", text: DOMAIN_LABELS[l.domain] || l.domain }));
     }
-    if (!parts.length) parts.push("No single cap — consistent profile");
-    return parts.join(" · ");
+    if (!items.length) return [el("span", { class: "compare-nogate" }, "No single cap — consistent profile")];
+    const nodes = items.map(it => tagItem(it.kind, it.text));
+    if (out.gates.decline.length > 2 || out.gates.postpone.length > 2) nodes.push(document.createTextNode(` (+${out.gates.decline.length + out.gates.postpone.length - 2} more)`));
+    return nodes;
   }
 
   function compareFinancial(out) {
@@ -7304,6 +7538,17 @@ const App = (() => {
     const headTxt = el("div", {});
     headTxt.appendChild(el("h2", {}, "Carrier comparison — same profile, all carriers"));
     headTxt.appendChild(el("p", { class: "card-sub" }, "The same answers run through every carrier ruleset. Classes are carrier-specific labels on a shared ladder (Preferred Plus/Elite → Standard → table-rated); a tobacco profile appears in each carrier's own tobacco class. Click a row to open that carrier's full estimate."));
+    /* Issue 7 — lane-comparability caveat lifted up from the footer note into a
+       persistent header strip, shown whenever a simplified-issue or
+       final-expense lane sits beside fully underwritten term: same ladder
+       labels, different products — a "Preferred" at Americo is not a
+       "Preferred" at Banner. */
+    const laneKinds = rows.map(r => CARRIER_LANES[r.id] && CARRIER_LANES[r.id].kind);
+    const hasSimplifiedLane = laneKinds.some(k => k === "simplified_issue" || k === "final_expense");
+    const hasFullLane = laneKinds.some(k => k === "fully_underwritten" || k === "database_underwritten");
+    if (hasSimplifiedLane && hasFullLane) {
+      headTxt.appendChild(el("div", { class: "compare-lane-caveat" }, "Lane mix: simplified-issue and final-expense carriers appear beside fully underwritten term — same ladder labels, different products. Their classes are not directly comparable; see the lane under each carrier name."));
+    }
     head.appendChild(headTxt);
     const headActions = el("div", { class: "compare-head-actions" });
     const expandAllBtn = el("button", { class: "btn btn-ghost compare-all-btn", type: "button", "aria-label": "Expand or collapse every carrier row", title: "Expand every row's full gates & evidence, or collapse them all" }, "Expand all");
@@ -7366,9 +7611,18 @@ const App = (() => {
     ]));
     tbl.appendChild(thead);
     const tbody = el("tbody", {});
+    /* Best-class highlight: the most favorable class offered across the
+       compared carriers for this profile, so the producer sees the strongest
+       lane(s) at a glance. Only a real underwriting offer (better than manual
+       review / postpone / decline) qualifies — an all-decline table marks no
+       row as "best". Ties (several carriers at the same best class) all get
+       the badge. */
+    const bestIdx = Math.min(...rows.map(r => CLASS_INDEX[r.out.finalClass] != null ? CLASS_INDEX[r.out.finalClass] : CLASS_INDEX.decline));
+    const showBest = bestIdx < CLASS_INDEX.manual_review;
     rows.forEach(row => {
       const rules = CARRIER_RULES[row.id];
       const cn = compareClassName(row.out, rules);
+      const isBest = showBest && CLASS_INDEX[row.out.finalClass] === bestIdx;
       const isCurrent = row.id === state.carrier;
       // Clicking a row switches the results page to that carrier's full estimate;
       // the chevron expands the row in place to show full gates + evidence
@@ -7389,8 +7643,15 @@ const App = (() => {
       }, "▸");
       tr.appendChild(el("td", { class: "compare-expand-cell" }, expandBtn));
       rowRefs.push({ tr, expandBtn, row });
-      tr.appendChild(el("td", { style: "font-weight:600" }, [rules.name, el("div", { class: "compare-version" }, rules.guide.version)]));
-      tr.appendChild(el("td", {}, el("span", { class: "klass-chip klass", style: `background:${cn.color}` }, cn.name)));
+      tr.appendChild(el("td", { style: "font-weight:600" }, [
+        rules.name,
+        el("div", { class: "compare-version" }, rules.guide.version),
+        el("div", { class: "compare-lane", title: (CARRIER_LANES[row.id] && CARRIER_LANES[row.id].note) || "" }, carrierLane(row.id))
+      ]));
+      tr.appendChild(el("td", {}, el("span", { class: "klass-chip klass" + (isBest ? " best" : ""), style: `background:${cn.color}` }, [
+        cn.name,
+        isBest ? el("span", { class: "compare-best-badge", title: "Best available class for this profile across the compared carriers" }, "Best") : null
+      ])));
       tr.appendChild(el("td", {}, compareLimiting(row)));
       tr.appendChild(el("td", {}, compareEvidence(row.out)));
       tr.appendChild(el("td", {}, compareFinancial(row.out)));
@@ -7399,9 +7660,19 @@ const App = (() => {
     tbl.appendChild(tbody);
     wrap.appendChild(tbl);
 
+    const bottomLine = el("div", { class: "compare-bottom-line" });
+    bottomLine.appendChild(el("strong", {}, "Bottom line: "));
+    bottomLine.appendChild(document.createTextNode(compareBottomLine(rows)));
+    wrap.appendChild(bottomLine);
+
     const note = el("div", { class: "note-box" });
-    note.appendChild(el("strong", {}, "How to read this: "));
-    note.appendChild(document.createTextNode("Each column is the carrier's own estimated class for the same applicant — the best match varies by product and underwriting style. Click any row to open that carrier's full estimate below; click the chevron on a row to expand its full gate list and evidence checklist in place. This is still a preliminary, non-binding estimate based only on disclosed information; evidence, records, and carrier rules can change every result."));
+    note.appendChild(el("strong", {}, "How to read this:"));
+    const noteList = el("ul", { class: "compare-read-list" });
+    noteList.appendChild(el("li", {}, "Each column is that carrier's own estimated class for the same applicant — the best match varies by product and underwriting style."));
+    noteList.appendChild(el("li", {}, [el("strong", {}, "Lanes aren't comparable: "), "simplified-issue and final-expense classes are not the same product as fully underwritten term — check the lane under each carrier name."]));
+    noteList.appendChild(el("li", {}, "Click any row to open that carrier's full estimate below; click the chevron to expand its full gates and evidence in place."));
+    noteList.appendChild(el("li", {}, "Preliminary and non-binding — evidence, records, and carrier rules can change every result."));
+    note.appendChild(noteList);
     wrap.appendChild(note);
     return wrap;
   }
@@ -7456,16 +7727,21 @@ const App = (() => {
     let heroInfo;
     if (out.finalClass === "manual_review") {
       heroInfo = { name: "Manual underwriting review", meaning: "Key evidence is missing or conflicting. Complete the intake and obtain records before estimating.", color: "#5b6b7b" };
-    } else if (out.tobaccoClass && state.carrier === "foresters" && out.tobaccoPlus) {
-      heroInfo = { name: "Tobacco Plus", meaning: "Nicotine use within the past year AND meets all Preferred Plus criteria (≤1 pack per day for cigarettes) — Foresters Tobacco Plus, subject to full evidence and carrier rules.", color: "#b8860b" };
-    } else if (out.tobaccoClass && (out.finalClass === "preferred_plus" || out.finalClass === "preferred")) {
-      heroInfo = { name: "Preferred Tobacco", meaning: "Otherwise favorable profile with nicotine use — carrier's Preferred Tobacco class, subject to full evidence and carrier rules.", color: "#b8860b" };
-    } else if (out.tobaccoClass && (out.finalClass === "standard_plus" || out.finalClass === "standard")) {
-      heroInfo = { name: "Standard Tobacco", meaning: "Average risk with nicotine use; health factors still affect the result.", color: "#8a6d1a" };
-    } else if (out.tobaccoClass && out.finalClass === "table") {
-      heroInfo = { name: "Table-rated (tobacco base)", meaning: "Substandard risk with nicotine use; tables are not available with preferred tobacco classes.", color: "#b8860b" };
+    } else if (out.tobaccoClass) {
+      /* Name/color come from the shared outcomeClassLabel so the hero and the
+         comparison table always agree (Tobacco Plus, flat-extra tobacco, etc.);
+         only the explanation text is hero-specific. */
+      const t = outcomeClassLabel(out, rules);
+      let meaning;
+      if (rules.id === "foresters" && out.tobaccoPlus) meaning = "Nicotine use within the past year AND meets all Preferred Plus criteria (≤1 pack per day for cigarettes) — Foresters Tobacco Plus, subject to full evidence and carrier rules.";
+      else if (out.finalClass === "preferred_plus" || out.finalClass === "preferred") meaning = "Otherwise favorable profile with nicotine use — carrier's Preferred Tobacco class, subject to full evidence and carrier rules.";
+      else if (out.finalClass === "table") meaning = "Substandard risk with nicotine use; tables are not available with preferred tobacco classes.";
+      else meaning = "Average risk with nicotine use; health factors still affect the result.";
+      heroInfo = { name: t.name, color: t.color, meaning };
     } else {
-      heroInfo = rules.classInfo[out.finalClass] || { name: out.finalClass.replace(/_/g, " "), meaning: "", color: "#5b6b7b" };
+      const t = outcomeClassLabel(out, rules);
+      const ci = rules.classInfo[out.finalClass] || {};
+      heroInfo = { name: t.name, color: t.color, meaning: ci.meaning || "" };
     }
 
     const hero = el("div", { class: "result-hero", style: `background:linear-gradient(135deg, ${heroInfo.color}, ${shade(heroInfo.color, -25)})` });
@@ -7474,7 +7750,16 @@ const App = (() => {
     if (heroInfo.meaning) hero.appendChild(el("div", { class: "hero-meaning" }, heroInfo.meaning));
     const meta = el("div", { class: "hero-meta" });
     meta.appendChild(el("div", { class: "meta-item" }, [el("strong", {}, rangeLabel(out.range)), "likely range"]));
-    meta.appendChild(el("div", { class: "meta-item" }, [el("strong", {}, out.confidence.level), "confidence"]));
+    /* Issue 4 — localize the confidence level: instead of a bare "Moderate",
+       state what evidence would firm it up, drawn straight from the engine's
+       missing list (A1c, last-fill dates, pending-care status, etc.). */
+    const confItem = el("div", { class: "meta-item" }, [el("strong", {}, out.confidence ? out.confidence.level : "—"), "confidence"]);
+    if (out.confidence && out.confidence.missing && out.confidence.missing.length) {
+      const top = out.confidence.missing.slice(0, 3);
+      const more = out.confidence.missing.length - top.length;
+      confItem.appendChild(el("div", { class: "hero-conf-missing" }, "Needs: " + top.join(", ") + (more > 0 ? ` (+${more} more)` : "")));
+    }
+    meta.appendChild(confItem);
     meta.appendChild(el("div", { class: "meta-item" }, [el("strong", {}, String(state.age || "—")), "age"]));
     if (out.tobaccoClass) meta.appendChild(el("div", { class: "meta-item" }, [el("strong", {}, "Tobacco"), "class basis"]));
     hero.appendChild(meta);
@@ -7881,12 +8166,17 @@ const App = (() => {
     ]));
     tbl.appendChild(thead);
     const tbody = el("tbody", {});
+    /* Same best-class ranking as the on-screen table, so the printed sheet
+       agrees with the screen version. */
+    const pBestIdx = Math.min(...rows.map(r => CLASS_INDEX[r.out.finalClass] != null ? CLASS_INDEX[r.out.finalClass] : CLASS_INDEX.decline));
+    const pShowBest = pBestIdx < CLASS_INDEX.manual_review;
     rows.forEach(row => {
       const rules = CARRIER_RULES[row.id];
       const cn = compareClassName(row.out, rules);
+      const pIsBest = pShowBest && CLASS_INDEX[row.out.finalClass] === pBestIdx;
       const tr = el("tr", { class: row.id === state.carrier ? "print-current" : "" });
-      tr.appendChild(el("td", { class: "print-carrier" }, [rules.name, el("div", { class: "print-version" }, rules.guide.version)]));
-      tr.appendChild(el("td", {}, el("span", { class: "klass-chip klass", style: `background:${cn.color}` }, cn.name)));
+      tr.appendChild(el("td", { class: "print-carrier" }, [rules.name, el("div", { class: "print-version" }, rules.guide.version), el("div", { class: "print-lane" }, carrierLane(row.id))]));
+      tr.appendChild(el("td", {}, el("span", { class: "klass-chip klass" + (pIsBest ? " best" : ""), style: `background:${cn.color}` }, [cn.name, pIsBest ? el("span", { class: "compare-best-badge" }, "Best") : null])));
       tr.appendChild(el("td", {}, compareLimiting(row)));
       tr.appendChild(el("td", {}, compareEvidence(row.out)));
       tr.appendChild(el("td", {}, compareFinancial(row.out)));
