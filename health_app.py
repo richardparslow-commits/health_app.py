@@ -43,6 +43,14 @@ def build_app_html() -> str:
         "<style>\n" + css + "\n</style>",
         index,
     )
+    # Capture the release version before the loader that defines it is
+    # stripped, so the embedded build still exposes window.HCE_VERSION (the
+    # acknowledgment record prints "App version N" — same as desktop). Mirrors
+    # scripts/build-embedded.js in the HealthClassEstimator repo.
+    version_match = re.search(r'var HCE_VERSION = "(\d+)"', index)
+    if not version_match:
+        raise RuntimeError("could not find HCE_VERSION in index.html")
+    version_script = f'<script>\nwindow.HCE_VERSION = "{version_match.group(1)}"; // stamped by build_app_html\n</script>\n'
     # Drop the dynamic cache-busted script loader and inline the scripts
     # instead. Classic (non-async) inline scripts execute in document order:
     # rules -> engine -> app, the load order the app depends on.
@@ -52,7 +60,7 @@ def build_app_html() -> str:
         index,
         flags=re.S,
     )
-    inline = "".join(f"<script>\n{src}\n</script>" for src in (rules_js, engine_js, app_js))
+    inline = version_script + "".join(f"<script>\n{src}\n</script>" for src in (rules_js, engine_js, app_js))
     index = index.replace("</body>", inline + "\n</body>")
     return index
 
