@@ -29,7 +29,9 @@ Copy the latest assets from `HealthClassEstimator` into this repo and redeploy:
 
     cp -r <HealthClassEstimator>/index.html <HealthClassEstimator>/css <HealthClassEstimator>/js .
 
-and optionally rebuild the single-file artifact:
+Rebuild and copy the single-file artifact whenever the assets change:
+Streamlit prefers `app_embedded.html`, so updating only the individual assets
+will continue to serve the old embedded release.
 
     cd <HealthClassEstimator> && node scripts/build-embedded.js app_embedded.html && cp app_embedded.html <this repo>/
 

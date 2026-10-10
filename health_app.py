@@ -7,7 +7,8 @@ single self-contained document and renders it in a component iframe: the exact
 same code that runs in the desktop/git version, byte for byte.
 
 To update the estimator: replace the asset files in this repo with the current
-ones from HealthClassEstimator and redeploy. All underwriting logic lives in
+ones from HealthClassEstimator, rebuild app_embedded.html, and redeploy.
+All underwriting logic lives in
 js/rules.js (carrier data) and js/engine.js (the rule engine); nothing
 underwriting-related lives in this Python file.
 
