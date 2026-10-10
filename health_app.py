@@ -1,7 +1,7 @@
 """Life Policy Pilot — Health Class Estimator (Streamlit wrapper).
 
 The estimator itself is the static HealthClassEstimator app — index.html,
-css/styles.css, and js/{rules,engine,app}.js. Streamlit cannot serve a static
+css/styles.css, and js/{rules,state,engine,app}.js. Streamlit cannot serve a static
 HTML/CSS/JS app from a file path, so this module inlines those assets into a
 single self-contained document and renders it in a component iframe: the exact
 same code that runs in the desktop/git version, byte for byte.
@@ -34,6 +34,7 @@ def build_app_html() -> str:
     index = (ROOT / "index.html").read_text(encoding="utf-8")
     css = (ROOT / "css" / "styles.css").read_text(encoding="utf-8")
     rules_js = (ROOT / "js" / "rules.js").read_text(encoding="utf-8")
+    state_js = (ROOT / "js" / "state.js").read_text(encoding="utf-8")
     engine_js = (ROOT / "js" / "engine.js").read_text(encoding="utf-8")
     app_js = (ROOT / "js" / "app.js").read_text(encoding="utf-8")
 
@@ -53,14 +54,14 @@ def build_app_html() -> str:
     version_script = f'<script>\nwindow.HCE_VERSION = "{version_match.group(1)}"; // stamped by build_app_html\n</script>\n'
     # Drop the dynamic cache-busted script loader and inline the scripts
     # instead. Classic (non-async) inline scripts execute in document order:
-    # rules -> engine -> app, the load order the app depends on.
+    # rules -> state -> engine -> app, the load order the app depends on.
     index = re.sub(
         r"<script>\s*/\* Single cache-busting version.*?</script>",
         "",
         index,
         flags=re.S,
     )
-    inline = version_script + "".join(f"<script>\n{src}\n</script>" for src in (rules_js, engine_js, app_js))
+    inline = version_script + "".join(f"<script>\n{src}\n</script>" for src in (rules_js, state_js, engine_js, app_js))
     index = index.replace("</body>", inline + "\n</body>")
     return index
 
