@@ -43,13 +43,24 @@ from `js/rules.js` (carrier rulesets) and `js/engine.js` (the rule engine).
     pip install -r requirements.txt
     streamlit run health_app.py
 
-## Deployment state — release 77
+## Deployment state — Release 78 follow-ups
 
-The release 77 assets and embedded document were synchronized from tested
-HealthClassEstimator main commit `8d3877cc1f7ad631d2378148e1facd70feccc251`.
-The Python fallback includes the interview-state module before the engine and UI.
+The current assets and rebuilt embedded document are synchronized from tested
+HealthClassEstimator main commit `9e069812f8274e6f6c522da05ab6dd01a1f4f82a`.
+The cumulative source-derived suite passed 10,260 underwriting assertions, plus
+standalone version, asset, dependency-order and single-engine checks.
 
-This synchronization uses the owner's connected GitHub tools. The automatic
-cross-repository workflow still needs `STREAMLIT_PUSH_TOKEN` configured for
-future automatic pushes; it currently skips the deployment steps without that
-credential. Do not interpret a green tests/build workflow as a completed sync.
+This release includes the latest Quantum limits/source-conflict guards, immediate
+Review completeness refresh, MOO simplified-issue driving review, and nicotine,
+vital, family/driving, build/weight and criminal-date evidence validation.
+Both standalone broker links open the current website contact page without
+transferring estimator answers. Profile completeness remains 7 criteria, 14
+partial and 3 unverified. The Python wrapper and requirements are unchanged.
+
+The separate website owns its Contact/Concierge APIs and iframe navigation
+adapters. They are not server features of this static Streamlit estimator.
+
+The automatic cross-repository workflow requires `STREAMLIT_PUSH_TOKEN`. A green
+source tests/build run does not prove deployment when that token is absent.
+This release uses an explicit update to the existing deployment repository;
+no credential was created or security setting changed.

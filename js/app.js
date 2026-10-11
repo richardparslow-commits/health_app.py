@@ -33,7 +33,7 @@ const App = (() => {
     wrap.append(lab,control);if(opts.hint)wrap.appendChild(node("p","hint",opts.hint));parent.appendChild(wrap);return control;
   }
   function yn(parent,label,key,opts={}) {return field(parent,label,key,yesNo,opts);}
-  function confirmed(parent,label,key) {return field(parent,label,key,[["yes","Yes, confirmed"],["no","Still incomplete"],["unknown","Unsure"]]);}
+  function confirmed(parent,label,key,opts={}) {return field(parent,label,key,[["yes","Yes, confirmed"],["no","Still incomplete"],["unknown","Unsure"]],opts);}
   function number(parent,label,key,opts={}) {return field(parent,label,key,null,{type:"number",min:0,step:"any",...opts});}
   function date(parent,label,key,opts={}) {return field(parent,label,key,null,{type:"date",...opts});}
   function text(parent,label,key,opts={}) {return field(parent,label,key,null,opts);}
@@ -62,6 +62,7 @@ const App = (() => {
     date(c,"Date of birth","dob");field(c,"Sex used for the carrier's underwriting chart","sex",[["male","Male"],["female","Female"],["unknown","Unsure / needs carrier review"]]);
     field(c,"State of residence","state",states);
     number(c,"Coverage requested ($)","faceAmount",{min:1,step:1000});
+    if(p?.id === "uhl_otherterm")field(c,"United Home Life term plan","uhlTermPlan",[["simple20","Simple Term 20"],["simple30","Simple Term 30"],["simple20rop","Simple Term 20 ROP"]],{hint:"Choose the exact plan. Existing saved drafts do not imply a selection."});
     if(p?.kind === "term")field(c,"Requested term length","termYears",[[10,"10 years"],[15,"15 years"],[20,"20 years"],[25,"25 years"],[30,"30 years"],[35,"35 years"],[40,"40 years"]],{hint:"Term availability must be confirmed for your age and product."});
     field(c,"Main purpose of coverage","policyPurpose",[["income","Replace earned income"],["mortgage","Mortgage / debt"],["family","Family support"],["estate","Estate planning"],["business","Business"],["final_expense","Final expenses"],["other","Other"]],{render:true});
     if(state.policyPurpose === "income" && p?.id !== "sbli_easytrak")number(c,"Annual earned income ($)","income");
@@ -208,9 +209,14 @@ const App = (() => {
   }
   function review(c) {
     paragraph(c,"Confirm the histories before estimating. Unknown facts, incomplete application rules and source conflicts will produce a review result.");
-    confirmed(c,"Are your answers complete and accurate, including every condition, prescription and relevant event?","historyConfirmed");
-    const out=Engine.run(state.productId,state);
-    if(out.missing.length){const ul=node("ul");out.missing.forEach(t=>ul.appendChild(node("li",null,t)));c.appendChild(node("h3",null,"Details still needed"));c.appendChild(ul);}
+    const details=node("div");details.id="review-details";details.setAttribute("aria-live","polite");
+    function refreshDetails() {
+      const out=Engine.run(state.productId,state);
+      details.replaceChildren();
+      if(out.missing.length){const ul=node("ul");out.missing.forEach(t=>ul.appendChild(node("li",null,t)));details.append(node("h3",null,"Details still needed"),ul);}
+    }
+    confirmed(c,"Are your answers complete and accurate, including every condition, prescription and relevant event?","historyConfirmed",{onChange:refreshDetails});
+    c.appendChild(details);refreshDetails();
     paragraph(c,"An estimate cannot guarantee coverage, a price or living-benefit riders. The carrier will verify records and financial justification.");
   }
   const steps=[
