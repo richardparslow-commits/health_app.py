@@ -81,8 +81,16 @@ def build_app_html() -> str:
     # Refuse to hand a half-built document to the component: mirrors the guard in
     # scripts/build-embedded.js, so a renamed loader or an added asset file fails
     # here with a clear error instead of rendering an estimator that silently
-    # runs someone else's copy of the code.
-    if 'href="css/' in index or 'src="js/' in index or "Single cache-busting" in index:
+    # runs someone else's copy of the code. 'createElement("script")' is the
+    # loader's signature and appears nowhere else — the strip above is anchored on
+    # the loader's comment, so a document whose loader survived for any other
+    # reason (an edit to that comment, say) has to fail here as well.
+    if (
+        'href="css/' in index
+        or 'src="js/' in index
+        or "Single cache-busting" in index
+        or 'createElement("script")' in index
+    ):
         raise RuntimeError(
             "embedded build still references external assets or the cache-busting "
             "loader — update build_app_html() to match scripts/build-embedded.js"
