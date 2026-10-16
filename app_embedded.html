@@ -581,7 +581,7 @@ table.domain-table { width: 100%; border-collapse: collapse; font-size: 13.5px; 
   border-top: 1px solid var(--line);
 }
 .footer-links-label { font-weight: 600; }
-.footer-links-sep { color: var(--line); }
+.footer-links-sep { color: var(--muted); }
 .footer-links a { color: var(--teal); text-decoration: underline; text-underline-offset: 2px; }
 .footer-links a:hover { color: var(--navy); }
 /* Broker contact CTA — distinct from the plain footer text links so the
@@ -715,6 +715,23 @@ table.domain-table { width: 100%; border-collapse: collapse; font-size: 13.5px; 
 }
 
 /* ---- Print ----------------------------------------------------------- */
+/* Visually hidden, still announced: keeps a table's caption out of the layout
+   while giving the table its accessible name. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.table-scroll:focus-visible { outline: 3px solid #d79124; outline-offset: 3px; }
+
 @media print {
   .app-header, .steps-nav, .app-footer, .btn, .no-print { display: none !important; }
   .app-main { padding: 0; max-width: 100%; }
@@ -906,7 +923,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 <div class="ack-gate hidden" id="ack-gate" role="dialog" aria-modal="true" aria-labelledby="ack-title">
   <div class="ack-card">
     <div class="ack-brand">HealthClassEstimator</div>
-    <h2 id="ack-title">Before you continue</h2>
+    <h2 id="ack-title" tabindex="-1">Before you continue</h2>
     <p class="ack-sub">Acknowledgment &amp; disclaimer &mdash; please read before using this tool.</p>
 
     <div class="ack-section">
@@ -1011,7 +1028,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 <main class="app-main">
   <div id="step-content"></div>
 
-  <div id="results-content" class="hidden"></div>
+  <!-- role/aria-labelledby gives the result view a name; focus is moved to its
+       heading when it replaces the interview, so it is announced once. -->
+  <div id="results-content" class="hidden" role="region" aria-labelledby="result-heading"></div>
 </main>
 
 <footer class="app-footer">
@@ -1041,11 +1060,11 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
   </div>
 </footer>
 
-<div id="toast" class="toast hidden"></div>
+<div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
 
 <script>
-window.HCE_VERSION = "78"; // stamped by build-embedded.js
+window.HCE_VERSION = "79"; // stamped by build-embedded.js
 </script>
 <script>
 /* Source-edition underwriting data. No inferred cross-product medical ratings.
@@ -1253,6 +1272,16 @@ const RULE_SOURCES = {
     ],
     "file": "Mutual of Omaha/moo-simplified-issue-life-uw-guide-updated-91625.pdf",
     "sha256": "c5e4e64c4d4d8f2665b64cb87462ce4b5612fffef62d042bd389f8dadd4b82fb"
+  },
+  "M-TLE-HIGHLIGHT": {
+    "title": "Mutual of Omaha Term Life Express highlight sheet",
+    "edition": "285243_0426 (April 2026); current carrier-hosted copy checked 2026-10-11; conflicts with 283976_0426 and 618352_0426 at ages 51–75",
+    "pages": [
+      1
+    ],
+    "file": "Mutual of Omaha/MOO Express2.pdf",
+    "url": "https://producer.mutualofomaha.com/enterprise/wcm/connect/producer.mutualofomaha.com-9968/a7288831-24c5-4af7-9841-21624a43a8dc/285243_0918-term-life-express-highlight-sheet.pdf?CVID=mSN44vj&MOD=AJPERES",
+    "sha256": "9c7391b50f4878df58ed907ce6809a899997fdf202b40ed2d9c01bed7654df69"
   },
   "D299": {
     "title": "Mutual of Omaha Term Life Express brochure",
@@ -2552,10 +2581,11 @@ const PRODUCT_RULES = Object.fromEntries([
     "route": "Simplified issue",
     "sources": [
       "M-SI-2026",
-      "D299"
+      "D299",
+      "M-TLE-HIGHLIGHT"
     ],
     "status": "partial",
-    "reviewed": "2026-10-10",
+    "reviewed": "2026-10-11",
     "minAge": 18,
     "maxAge": 75,
     "ageBasis": "last",
@@ -2584,7 +2614,7 @@ const PRODUCT_RULES = Object.fromEntries([
     "eligibilityPages": [
       2
     ],
-    "scopeNote": "The April 2026 brochure supports a $25,000 minimum, age-dependent face limits and 10/15/20/30-year terms. It does not establish every term-specific issue-age or class rule. Confirm the current application, selected term at the issue age, medical combinations and state variations with Mutual of Omaha; a permitted duration does not establish eligibility."
+    "scopeNote": "The April 2026 brochure and simplified-issue guide list maximums of $550,000 at 18–50, $450,000 at 51–60 and $350,000 at 61–75. The April 2026 highlight sheet agrees at 18–50 but instead lists $250,000 at 51–60 and $150,000 at 61–75. Amounts in that difference require confirmation of the current carrier limit; neither source is silently treated as superseding the other. The $25,000 minimum and offered 10/15/20/30-year durations are documented, but selected-term issue ages, actual class and medical combinations remain under review. Obtain the current application and applicable forms for the state where the owner signs; the national guide expressly allows state-specific timeframes."
   },
   {
   "id": "moo_iule",
@@ -3205,6 +3235,12 @@ const Engine = (() => {
       const above = maxFace && face > maxFace;
       issue("face_limit","Requested coverage is outside this product/route's published face limits.","unavailable",above ? p.maxFaceSource || p.eligibilitySource || p.sources[0] : p.eligibilitySource || p.sources[0],above && p.maxFacePages ? p.maxFacePages : p.eligibilitySource ? p.eligibilityPages || [1] : undefined);
     }
+    // Two April 2026 TLE editions disagree after age 50. Within the higher
+    // envelope is a review range; neither edition proves which limit governs.
+    if (p.id === "moo_tle" && age !== null && face !== null && age >= 51 && age <= 75) {
+      const highlightMax = age <= 60 ? 250000 : 150000;
+      if (face > highlightMax && face <= maxFace) issue("moo_tle_amount_conflict","The April 2026 Term Life Express highlight sheet lists lower age-specific maximums than the April 2026 brochure and simplified-issue guide. Confirm the current limit for this age, selected term and application state before relying on the requested amount.","review","M-TLE-HIGHLIGHT",[1]);
+    }
     if (p.id.startsWith("foresters_") && p.route === "Non-medical") {
       const existing = num("existingCarrierCoverage","total existing Foresters coverage",0,1000000000);
       if (face !== null && existing !== null && maxFace && face + existing > maxFace) issue("face_total","Total existing and requested Foresters coverage exceeds the non-medical route limit.","unavailable","D152",[7]);
@@ -3317,7 +3353,10 @@ const Engine = (() => {
       if (p.id === "sbli_easytrak") {
         need("employment","work status",["employed","spouse","student","seeking","retired","other"]);
         if (["student","seeking"].includes(d.employment) && (face>100000 || d.employment === "student" && age>=26)) issue("sbli_employment","EasyTrak student/seeking-work limits are not met.","unavailable","D347",[4]);
-        if (d.employment === "retired" && (age<49 || face>250000)) issue("sbli_retired","EasyTrak retired eligibility requires age49+ and coverage at most $250,000.","unavailable","D347",[4]);
+        // The age leg needs a known age: an unentered date of birth must not read
+        // as age 0 and turn a missing fact into a carrier exclusion.
+        if (d.employment === "retired" && (age!==null && age<49 || face>250000)) issue("sbli_retired","EasyTrak retired eligibility requires age49+ and coverage at most $250,000.","unavailable","D347",[4]);
+        else if (d.employment === "retired" && age===null && face!==null && face<=250000) issue("sbli_retired_age","Confirm the applicant's age before screening EasyTrak retired eligibility; the published minimum issue age is 49.","review","D347",[4]);
         if (d.employment === "other") issue("sbli_work_review","This work status requires EasyTrak eligibility review.","review","D347",[4]);
         if (face !== null && face % 1000 !== 0) issue("sbli_face_increment","EasyTrak coverage is offered in $1,000 increments. Confirm a supported amount; no rounding is assumed.","unavailable","SB-ET-SPECS",[1]);
         if (d.employment === "employed") {
@@ -3335,8 +3374,13 @@ const Engine = (() => {
       }
       if (p.id === "corebridge_legacy") {
         const existing=num("existingCarrierCoverage","existing AGL GIWL/SIWL coverage",0,1000000000);
-        const levelMax=age<=60?25000:age<=70?30000:35000;
-        if(face>levelMax || existing!==null && face+existing>35000 || out.benefitTier === "graded" && existing!==null && face+existing>25000) issue("core_amount","The requested amount / total existing AGL coverage exceeds the source benefit-design limit.","unavailable","D105",[7,9]);
+        // The Level maximum depends on the issue age: 25,000 at 60 or less, 30,000 at
+        // 61-70 and 35,000 at 71+. An unknown age cannot select one, so only an amount
+        // above every published maximum is excluded; an in-between amount is a review.
+        const levelMax=age!==null?age<=60?25000:age<=70?30000:35000:null;
+        const aboveEveryLimit=levelMax===null&&face!==null&&face>35000;
+        if(aboveEveryLimit || levelMax!==null && face>levelMax || existing!==null && face+existing>35000 || out.benefitTier === "graded" && existing!==null && face+existing>25000) issue("core_amount","The requested amount / total existing AGL coverage exceeds the source benefit-design limit.","unavailable","D105",[7,9]);
+        else if(levelMax===null && face!==null && face>25000) issue("core_amount_age","Confirm the issue age before screening this amount; the published Level maximum is 25,000 at age 60 or less, 30,000 at 61-70 and 35,000 at 71+.","review","D105",[7]);
         if(age>=71&&out.tobaccoBasis === "tobacco"&&out.benefitTier === "level")issue("core_level_smoker","The supplied product guide does not offer Level benefits to smokers aged71–80.","unavailable","D105",[7]);
         if(d.replacement === "yes" && out.benefitTier === "graded")issue("core_graded_replacement","Replacement is permitted only for the Level design in this supplied guide.","unavailable","D105",[9]);
       }
@@ -4048,7 +4092,7 @@ const Engine = (() => {
 const App = (() => {
   const STORAGE_KEY="hce_state_v2", LEGACY_KEY="hce_state_v1";
   const $=sel=>document.querySelector(sel);
-  let state=InterviewState.empty(), step=0, results=false, migrationNotice=false;
+  let state=InterviewState.empty(), step=0, results=false, migrationNotice=false, focusStepHeading=false;
   const yesNo=[["yes","Yes"],["no","No"],["unknown","Unsure"]];
   const states="AL AK AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY PR GU VI AS MP".split(" ").map(s=>[s,s]);
   const conditions=[
@@ -4083,6 +4127,9 @@ const App = (() => {
   function date(parent,label,key,opts={}) {return field(parent,label,key,null,{type:"date",...opts});}
   function text(parent,label,key,opts={}) {return field(parent,label,key,null,opts);}
   function row(parent) {const r=node("div","field-row");parent.appendChild(r);return r;}
+  // A horizontally scrollable table needs to be reachable by keyboard and to
+  // carry a name; both are required before the region is announced.
+  function labelledRegion(label,table) {const region=node("div","table-scroll");region.setAttribute("role","region");region.setAttribute("tabindex","0");region.setAttribute("aria-label",label);region.appendChild(table);return region;}
   function paragraph(parent,text,cls="card-sub") {parent.appendChild(node("p",cls,text));}
   function button(label,fn,cls="btn btn-ghost") {const b=node("button",cls,label);b.type="button";b.addEventListener("click",fn);return b;}
   function listEditor(parent,key,label,renderRow) {
@@ -4280,7 +4327,8 @@ const App = (() => {
   function showResults() {
     const target=$("#results-content");target.replaceChildren();target.classList.remove("hidden");$("#step-content").classList.add("hidden");
     const out=Engine.run(state.productId,state),hero=node("section","result-hero");
-    hero.appendChild(node("div","hero-label",out.carrier+" — "+out.product+" — "+out.route));hero.appendChild(node("h2",null,resultLabel(out)));
+    hero.appendChild(node("div","hero-label",out.carrier+" — "+out.product+" — "+out.route));
+    const resultHeading=node("h2",null,resultLabel(out));resultHeading.id="result-heading";resultHeading.setAttribute("tabindex","-1");hero.appendChild(resultHeading);
     paragraph(hero,out.status === "estimated" ? "Preliminary result from the modeled source criteria. Carrier records and the current application can change this estimate." : "A final health class or benefit tier is withheld. Review the reasons below with the carrier.","hero-meaning");
     paragraph(hero,out.confidence.level+" · Assessment date "+out.assessed+" · "+(out.age == null ? "Age unconfirmed" : "Carrier age "+out.age+" ("+out.ageBasis+" birthday)"),"hero-meaning");target.appendChild(hero);
     if(out.tableRating||out.flatExtra){const box=node("section","card");box.appendChild(node("h3",null,"Separate rating components"));if(out.tableRating)paragraph(box,"Build component: Table "+out.tableRating.label+(out.tableRating.extraPercent?" ("+out.tableRating.extraPercent+"% extra rating)":"")+". Other factors and the final table remain subject to underwriting.");if(out.flatExtra)paragraph(box,out.flatExtra.basis+". "+sourceText(out.flatExtra.source));target.appendChild(box);}
@@ -4289,25 +4337,30 @@ const App = (() => {
     const ul=node("ul","decision-list");out.issues.forEach(i=>{const li=node("li");li.appendChild(node("span",null,i.text));li.appendChild(node("small","source-reference",sourceText(i.source)));ul.appendChild(li);});why.appendChild(ul);out.notes.forEach(t=>paragraph(why,t));target.appendChild(why);
     if(out.kind === "final_expense" && out.status === "estimated"){const tier=node("section","card");tier.appendChild(node("h3",null,"Benefit design"));paragraph(tier,out.benefitTier === "graded" ? "The supplied guide pays 110% of premiums for death in the first two years, then the face amount, subject to policy terms. This is a benefit design, not a preferred health class." : "The source's Level benefit design provides the full benefit from the first year, subject to policy terms. This is separate from premium and tobacco classification.");target.appendChild(tier);}
     const factors=node("section","card");factors.appendChild(node("h3",null,"How the factors limit this screen"));
-    const factorTable=node("table","domain-table"),factorHead=node("thead"),fh=node("tr");["Factor","Recorded evidence","Modeled limit"].forEach(t=>fh.appendChild(node("th",null,t)));factorHead.appendChild(fh);factorTable.appendChild(factorHead);const fb=node("tbody");
+    const factorTable=node("table","domain-table");factorTable.appendChild(node("caption","visually-hidden","How the factors limit this screen"));const factorHead=node("thead"),fh=node("tr");["Factor","Recorded evidence","Modeled limit"].forEach(t=>{const th=node("th",null,t);th.setAttribute("scope","col");fh.appendChild(th);});factorHead.appendChild(fh);factorTable.appendChild(factorHead);const fb=node("tbody");
     Object.entries(out.domains).filter(([key])=>key!=="classes").forEach(([key,v])=>{const tr=node("tr"),label={build:"Height / weight",nicotine:"Tobacco / nicotine",vitals:"Blood pressure / cholesterol",family:"Family history",driving:"Driving",medical:"Medical"}[key]||key;
       tr.appendChild(node("td",null,label));const evidence=node("td",null,v.detail||("Weight used: "+v.weight+" lb; BMI "+v.bmi?.toFixed(2)));evidence.appendChild(node("small","source-reference",sourceText(v.source)));tr.appendChild(evidence);
       const limit=out.kind === "final_expense" ? key === "nicotine" ? out.tobaccoBasis === "non_tobacco" ? "Non-tobacco basis" : out.tobaccoBasis === "tobacco" ? "Tobacco basis" : "Tobacco basis needs review" : "Benefit screen / carrier review" : v.ceiling?CLASS_LABELS[v.ceiling]:"Carrier review";
-      tr.appendChild(node("td",null,limit));fb.appendChild(tr);});factorTable.appendChild(fb);const factorScroll=node("div","table-scroll");factorScroll.appendChild(factorTable);factors.appendChild(factorScroll);target.appendChild(factors);
+      tr.appendChild(node("td",null,limit));fb.appendChild(tr);});factorTable.appendChild(fb);factors.appendChild(labelledRegion("How the factors limit this screen",factorTable));target.appendChild(factors);
     const comparisons=Engine.compare(state);
     if(comparisons.length>1){const box=node("section","card");box.appendChild(node("h3",null,"Other products with the same coverage type and route"));paragraph(box,"Listed in carrier order. Term length, riders, price and availability still require confirmation; these are not ranked offers.");
-      const table=node("table","domain-table"),head=node("tr");["Product","Screen result","Source scope"].forEach(t=>head.appendChild(node("th",null,t)));const th=node("thead");th.appendChild(head);table.appendChild(th);const body=node("tbody");
-      comparisons.forEach(o=>{const tr=node("tr");tr.appendChild(node("td",null,o.carrier+" — "+o.product));tr.appendChild(node("td",null,resultLabel(o)));tr.appendChild(node("td",null,o.verification === "criteria" ? "Selected criteria reconciled" : "Carrier review"));body.appendChild(tr);});table.appendChild(body);const scroll=node("div","table-scroll");scroll.appendChild(table);box.appendChild(scroll);target.appendChild(box);}
+      const table=node("table","domain-table");table.appendChild(node("caption","visually-hidden","Other products with the same coverage type and route"));const head=node("tr");["Product","Screen result","Source scope"].forEach(t=>{const cell=node("th",null,t);cell.setAttribute("scope","col");head.appendChild(cell);});const th=node("thead");th.appendChild(head);table.appendChild(th);const body=node("tbody");
+      comparisons.forEach(o=>{const tr=node("tr");tr.appendChild(node("td",null,o.carrier+" — "+o.product));tr.appendChild(node("td",null,resultLabel(o)));tr.appendChild(node("td",null,o.verification === "criteria" ? "Selected criteria reconciled" : "Carrier review"));body.appendChild(tr);});table.appendChild(body);box.appendChild(labelledRegion("Other products with the same coverage type and route",table));target.appendChild(box);}
     const refs=node("section","card");refs.appendChild(node("h3",null,"Source editions used"));out.sources.forEach(s=>{paragraph(refs,s.id+" · "+s.title+" · "+s.edition+(s.pages?.length ? " · Physical PDF pages "+s.pages.join(", ") : " · Web reference"));if(s.url){const a=node("a",null,"Carrier source");a.href=s.url;a.target="_blank";a.rel="noopener noreferrer";refs.appendChild(a);}});target.appendChild(refs);
     const actions=node("section","card");actions.append(button("Print this result",()=>window.print()),button("Delete saved answers and start over",reset));target.appendChild(actions);
     $("#btn-next").classList.add("hidden");$("#btn-back").textContent="← Edit answers";$("#btn-back").disabled=false;
+    // The button that asked for the result is now hidden, so focus would fall to
+    // the document. Enter the result instead: the heading carries its name and is
+    // announced once (a live region as well would speak the same result twice).
+    resultHeading.focus();
   }
   function render() {
     const nav=$("#steps-nav");nav.replaceChildren();steps.forEach(([label],i)=>{const b=button((i+1)+". "+label,()=>{step=i;results=false;render();},"step-pill"+(i===step&&!results?" active":""));if(i===step&&!results)b.setAttribute("aria-current","step");nav.appendChild(b);});
     if(results){showResults();return;}
     $("#results-content").classList.add("hidden");$("#step-content").classList.remove("hidden");const target=$("#step-content");target.replaceChildren();
     if(migrationNotice)paragraph(target,"Your previous draft was imported. Select a product and reconfirm the new histories; earlier unchecked boxes and mild/control defaults are not treated as answers.","migration-notice");
-    const card=node("section","card");card.appendChild(node("h2",null,steps[step][0]));steps[step][1](card);target.appendChild(card);
+    const card=node("section","card"),cardHeading=node("h2",null,steps[step][0]);card.appendChild(cardHeading);steps[step][1](card);target.appendChild(card);
+    if(focusStepHeading){focusStepHeading=false;cardHeading.setAttribute("tabindex","-1");cardHeading.focus();}
     $("#btn-back").disabled=step===0;$("#btn-back").textContent="← Back";$("#btn-next").classList.remove("hidden");$("#btn-next").textContent=step===steps.length-1?"Estimate →":"Next →";
   }
   function reset() {state=InterviewState.empty();step=0;results=false;migrationNotice=false;try{localStorage.removeItem(STORAGE_KEY);localStorage.removeItem(LEGACY_KEY);}catch{}render();}
@@ -4315,6 +4368,17 @@ const App = (() => {
     const gate=$("#ack-gate"),check=$("#ack-check"),accept=$("#ack-accept");let acknowledged=false;try{acknowledged=sessionStorage.getItem("hce_ack_v2")==="yes";}catch{}
     const surfaces=[$(".app-header"),$("#steps-nav"),$(".app-main"),$(".app-footer")];
     const set=open=>{gate.classList.toggle("hidden",!open);surfaces.forEach(s=>{s.inert=open;});};set(!acknowledged);
+    // aria-modal promises managed focus: announce and enter the dialog, keep Tab
+    // inside it, and hand focus to the first question once it is accepted.
+    const focusables=()=>[...gate.querySelectorAll("a[href],button:not([disabled]),input:not([disabled]),select,textarea")].filter(n=>n.offsetParent!==null);
+    gate.addEventListener("keydown",event=>{
+      if(event.key!=="Tab")return;
+      const items=focusables();if(!items.length)return;
+      const first=items[0],last=items[items.length-1],active=document.activeElement;
+      if(event.shiftKey&&(active===first||!gate.contains(active))){event.preventDefault();last.focus();}
+      else if(!event.shiftKey&&(active===last||!gate.contains(active))){event.preventDefault();first.focus();}
+    });
+    if(!acknowledged)$("#ack-title").focus();
     check.addEventListener("change",()=>accept.disabled=!check.checked);
     accept.addEventListener("click",()=>{if(!check.checked)return;try{sessionStorage.setItem("hce_ack_v2","yes");sessionStorage.setItem("hce_ack_time_v2",new Date().toISOString());}catch{}set(false);$("#productId")?.focus();});
   }
@@ -4327,7 +4391,7 @@ const App = (() => {
   function init() {
     try {const current=localStorage.getItem(STORAGE_KEY),old=localStorage.getItem(LEGACY_KEY);if(current||old){state=InterviewState.migrate(JSON.parse(current||old));migrationNotice=!!state.migrated;}}catch{migrationNotice=true;}
     $("#btn-next").addEventListener("click",()=>{if(step===steps.length-1)results=true;else step++;render();window.scrollTo(0,0);});
-    $("#btn-back").addEventListener("click",()=>{if(results)results=false;else if(step>0)step--;render();window.scrollTo(0,0);});
+    $("#btn-back").addEventListener("click",()=>{if(results){results=false;focusStepHeading=true;}else if(step>0)step--;render();window.scrollTo(0,0);});
     $("#btn-save").addEventListener("click",()=>{save();toast("Draft saved on this device.");});$("#btn-print-ack").addEventListener("click",printAck);
     // Reserve the actual fixed footer height, including wrapped mobile links.
     const footer=$(".app-footer"),fitFooter=()=>document.documentElement.style.setProperty("--footer-h",footer.getBoundingClientRect().height+"px");
