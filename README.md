@@ -31,9 +31,10 @@ Commit and push; Streamlit Cloud redeploys on the push.
 ## Verification
 
 At startup — and on every Streamlit rerun — `health_app.py` refuses to serve a
-pair unless the artifact's sha256 and byte length match the manifest, the
-manifest names `scripts/build-embedded.js` as the builder, and the document
-carries the release version the manifest records. A missing or edited pair is a
+pair unless the manifest names `app_embedded.html` as its artifact, the
+artifact's sha256 and byte length match the manifest, the manifest names
+`scripts/build-embedded.js` as the builder, and the document carries the release
+version the manifest records. A missing or edited pair is a
 loud error naming the command that fixes it, never a silently different tool:
 this repository used to inline loose assets when the artifact was missing, and
 that second implementation of the build drifted from the reviewed one in three
@@ -42,8 +43,9 @@ places before it was removed.
 The daily `Check the live consumers against the build` workflow in the canonical
 repository compares this artifact with a fresh build **byte for byte** and
 exercises this wrapper the way Streamlit does: the published pair must load, and
-a tampered artifact, a missing artifact, a missing manifest and a manifest whose
-release version lies must all be refused.
+a tampered artifact, a missing artifact, a missing manifest, a manifest that
+names a different file as its artifact and a manifest whose release version lies
+must all be refused.
 
 One residual risk, stated plainly: an artifact edited by hand *together with* a
 hand-regenerated manifest is self-consistent and passes at startup. Regenerating

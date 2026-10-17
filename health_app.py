@@ -43,9 +43,10 @@ def load_app_html() -> str:
     """Return the verified single-file estimator document.
 
     The document is the product of the canonical build, and this checks that
-    before it is served: the artifact's sha256 and byte length must equal the
-    ones the manifest records, the manifest must name the reviewed builder, and
-    the document must carry the release version the manifest records. A missing,
+    before it is served: the manifest must name this file, the artifact's sha256
+    and byte length must equal the ones the manifest records, the manifest must
+    name the reviewed builder, and the document must carry the release version
+    the manifest records. A missing,
     edited or stale pair is an error, not a fallback — the fallback this
     replaced was a second implementation of the build, and drift between the two
     was invisible until someone compared the documents byte for byte.
@@ -66,6 +67,18 @@ def load_app_html() -> str:
     missing = [field for field in FIELDS if field not in manifest]
     if missing:
         _refuse(MANIFEST_PATH.name + " has no " + ", ".join(missing) + " field(s).")
+
+    # The manifest names the file it describes; a pair from two different builds
+    # can otherwise be self-consistent and still describe the wrong document.
+    if manifest["artifact"] != ARTIFACT_PATH.name:
+        _refuse(
+            MANIFEST_PATH.name
+            + " names "
+            + repr(manifest["artifact"])
+            + " as the artifact, but this wrapper serves "
+            + ARTIFACT_PATH.name
+            + ". The manifest and the document must come from the same build."
+        )
 
     digest = hashlib.sha256(artifact).hexdigest()
     if digest != manifest["sha256"]:
