@@ -12,9 +12,9 @@ To update the estimator: copy the two files built there. This repository holds
 no build logic and no underwriting logic — the rules and the engine live in the
 canonical repository (js/rules.js, js/engine.js).
 
-Run locally:
-    pip install -r requirements.txt
-    streamlit run health_app.py
+Run locally on the declared interpreter (.python-version, 3.12):
+    python3.12 -m venv .venv && .venv/bin/pip install -r requirements.txt
+    .venv/bin/streamlit run health_app.py
 """
 import hashlib
 import json

@@ -28,6 +28,34 @@ Copy the pair, nothing else:
 
 Commit and push; Streamlit Cloud redeploys on the push.
 
+## Python version
+
+This app runs on **Python 3.12**, declared in `.python-version` at the root. That
+file is what version managers (pyenv, uv, asdf) and the canonical repository's CI
+read — and what a person should read before running anything here:
+
+    python3.12 -m venv .venv && .venv/bin/pip install -r requirements.txt
+    .venv/bin/streamlit run health_app.py
+
+If `python3.12` is not on the PATH, install it first (`pyenv install 3.12`, or
+Homebrew's `python@3.12`); the dev container already runs it. Opening this
+repository in that container is the shortest route to a local run that matches CI.
+
+The canonical repository's deploy and canary workflows set up their interpreter with
+`python-version-file: streamlit-app/.python-version` rather than naming a version in
+YAML, and its live check fails when the interpreter it is running is not the declared
+one. The dev container's image is pinned to 3.12 for the same reason: the interpreter
+that is easiest to trust is the one nobody reads.
+
+Streamlit Community Cloud does **not** read `.python-version` (or `runtime.txt`). The
+interpreter is chosen in the app's **Advanced settings** when it is deployed, so that
+selection is the live app's pin and `.python-version` is the instruction for it: the
+selection should be **3.12**, matching this file. Nothing here can read the selection
+back, so the app's own settings page is the only place to confirm or change it, and a
+push does not change it — a different interpreter means deleting and redeploying the
+app with another choice. If Cloud is ever left on a version this file does not name,
+the app may still work, but nothing in this repository asked for that version.
+
 ## Verification
 
 The document is embedded with `st.iframe`, Streamlit's supported way to serve an
