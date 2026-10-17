@@ -30,6 +30,13 @@ Commit and push; Streamlit Cloud redeploys on the push.
 
 ## Verification
 
+The document is embedded with `st.iframe`, Streamlit's supported way to serve an
+HTML string, and this repository requires `streamlit>=1.66`. It used to call
+`st.components.v1.html`, which Streamlit removes after 2026-06-01 — an upgrade
+would have broken the app with no change here, which is why the canonical
+repository now runs the staged app through Streamlit's real runtime before any
+push.
+
 At startup — and on every Streamlit rerun — `health_app.py` refuses to serve a
 pair unless the manifest names `app_embedded.html` as its artifact, the
 artifact's sha256 and byte length match the manifest, the manifest names

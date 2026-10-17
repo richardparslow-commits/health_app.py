@@ -145,7 +145,7 @@ st.caption(
     "underwriter's decision."
 )
 
-try:
-    st.components.v1.html(load_app_html(), height=2400, scrolling=True)
-except TypeError:  # older Streamlit releases without the scrolling parameter
-    st.components.v1.html(load_app_html(), height=2400)
+# st.iframe embeds an HTML string as-is in a sandboxed iframe and is the API
+# Streamlit keeps; st.components.v1.html is scheduled for removal, and an
+# upgrade would have taken this app down with no change here.
+st.iframe(load_app_html(), height=2400)
