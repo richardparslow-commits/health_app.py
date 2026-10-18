@@ -1,9 +1,9 @@
 {
   "artifact": "app_embedded.html",
-  "sha256": "88d1204338b8a223df37a150f086b4a3507731684bbadac6bb431c9b0c4b5f03",
-  "bytes": 238132,
-  "hce_version": "80",
+  "sha256": "1ec9a439ac16e404421db83365b7c8a5a9d6c7e382c03f475d0305b1bd122ba0",
+  "bytes": 245183,
+  "hce_version": "82",
   "builder": "scripts/build-embedded.js",
-  "source_commit": "94f4c9df34d71dbb00a97471939d36455b6012a8",
-  "built_utc": "2026-10-17T01:01:49.077Z"
+  "source_commit": "bcd28617f08c368c376b4cd9ef7f174ec1a64816",
+  "built_utc": "2026-10-18T17:25:56.046Z"
 }
