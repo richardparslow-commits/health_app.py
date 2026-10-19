@@ -4,6 +4,6 @@
   "bytes": 251134,
   "hce_version": "84",
   "builder": "scripts/build-embedded.js",
-  "source_commit": "caa784f507bbae7ca4c34e49a304622cb3829f07",
-  "built_utc": "2026-10-19T03:12:23.071Z"
+  "source_commit": "96409f5b17b7233916d03b063d00802ac6d43ef0",
+  "built_utc": "2026-10-19T05:29:43.266Z"
 }
