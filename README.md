@@ -3,6 +3,7 @@
 Streamlit wrapper for the HealthClassEstimator life-insurance pre-underwriting and
 case-triage tool. Live at https://life-insurance-health-class-predictor.streamlit.app/
 
+Release 88 updates the applicant-facing tool to a product-neutral health-history summary. No carrier, product or underwriting route selection appears in the interface, and no carrier-specific health class, eligibility or benefit tier is inferred.\n
 The estimator itself lives in `richardparslow-commits/HealthClassEstimator`. This
 repository holds only the wrapper and the built document: `app_embedded.html`, a
 single self-contained file, and `app_embedded.manifest.json`, which records its
