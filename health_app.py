@@ -122,7 +122,7 @@ def load_app_html() -> str:
 
 
 st.set_page_config(
-    page_title="Health Class Estimator — Life Policy Pilot",
+    page_title="Health History Assessment — Life Policy Pilot",
     page_icon="🩺",
     layout="wide",
 )
