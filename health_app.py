@@ -140,9 +140,9 @@ st.markdown(
 )
 
 st.caption(
-    "Preliminary, non-binding underwriting-lane estimate for producer case triage. "
-    "Not a medical diagnostic tool; does not issue insurance or replace a carrier "
-    "underwriter's decision."
+    "Product-neutral, self-reported health-history summary for pre-underwriting review. "
+    "No carrier, policy product, underwriting route, insurance health class or eligibility "
+    "is selected or determined. Not medical advice or an insurance offer."
 )
 
 # st.iframe embeds an HTML string as-is in a sandboxed iframe and is the API
